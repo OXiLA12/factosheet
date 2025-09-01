@@ -1,0 +1,163 @@
+-----> Building on the Heroku-24 stack
+-----> Using buildpack: heroku/python
+-----> Python app detected
+-----> Using Python 3.11 specified in .python-version
+-----> Installing Python 3.11.13
+-----> Installing uv 0.8.13
+-----> Installing dependencies using 'uv sync --locked --no-default-groups'
+       Resolved 106 packages in 0.67ms
+       Downloading pyarrow (40.8MiB)
+       Downloading pypdfium2 (2.7MiB)
+       Downloading pycryptodome (2.2MiB)
+       Downloading cryptography (4.3MiB)
+       Downloading pdfminer-six (5.4MiB)
+       Downloading pydantic-core (1.9MiB)
+       Downloading pillow (6.3MiB)
+       Downloading numpy (16.2MiB)
+       Downloading streamlit (9.5MiB)
+       Downloading grpcio (5.9MiB)
+       Downloading pydeck (6.6MiB)
+       Downloading stripe (1.6MiB)
+       Downloading pymupdf (22.9MiB)
+       Downloading pandas (11.8MiB)
+          Building sseclient==0.0.27
+        Downloading pydantic-core
+        Downloading pypdfium2
+          Building pycrypto==2.6.1
+          Building gcloud==0.18.3
+        Downloading pycryptodome
+        Downloading pdfminer-six
+        Downloading grpcio
+        Downloading pydeck
+        Downloading cryptography
+        Downloading pillow
+        Downloading stripe
+        Downloading streamlit
+        Downloading pymupdf
+        Downloading numpy
+             Built sseclient==0.0.27
+        Downloading pyarrow
+        Downloading pandas
+             Built gcloud==0.18.3
+         × Failed to build `pycrypto==2.6.1`
+         ├─▶ The build backend returned an error
+         ╰─▶ Call to `setuptools.build_meta:__legacy__.build_wheel` failed (exit
+             status: 1)
+       
+             [stdout]
+             checking for gcc... gcc
+             checking whether the C compiler works... yes
+             checking for C compiler default output file name... a.out
+             checking for suffix of executables...
+             checking whether we are cross compiling... no
+             checking for suffix of object files... o
+             checking whether we are using the GNU C compiler... yes
+             checking whether gcc accepts -g... yes
+             checking for gcc option to accept ISO C89... none needed
+             checking for __gmpz_init in -lgmp... yes
+             checking for __gmpz_init in -lmpir... no
+             checking whether mpz_powm is declared... yes
+             checking whether mpz_powm_sec is declared... yes
+             checking how to run the C preprocessor... gcc -E
+             checking for grep that handles long lines and -e... /usr/bin/grep
+             checking for egrep... /usr/bin/grep -E
+             checking for ANSI C header files... yes
+             checking for sys/types.h... yes
+             checking for sys/stat.h... yes
+             checking for stdlib.h... yes
+             checking for string.h... yes
+             checking for memory.h... yes
+             checking for strings.h... yes
+             checking for inttypes.h... yes
+             checking for stdint.h... yes
+             checking for unistd.h... yes
+             checking for inttypes.h... (cached) yes
+             checking limits.h usability... yes
+             checking limits.h presence... yes
+             checking for limits.h... yes
+             checking stddef.h usability... yes
+             checking stddef.h presence... yes
+             checking for stddef.h... yes
+             checking for stdint.h... (cached) yes
+             checking for stdlib.h... (cached) yes
+             checking for string.h... (cached) yes
+             checking wchar.h usability... yes
+             checking wchar.h presence... yes
+             checking for wchar.h... yes
+             checking for inline... inline
+             checking for int16_t... yes
+             checking for int32_t... yes
+             checking for int64_t... yes
+             checking for int8_t... yes
+             checking for size_t... yes
+             checking for uint16_t... yes
+             checking for uint32_t... yes
+             checking for uint64_t... yes
+             checking for uint8_t... yes
+             checking for stdlib.h... (cached) yes
+             checking for GNU libc compatible malloc... yes
+             checking for memmove... yes
+             checking for memset... yes
+             configure: creating ./config.status
+             config.status: creating src/config.h
+       
+             [stderr]
+             /tmp/uv-cache/builds-v0/.tmpsM6Oxd/lib/python3.11/site-packages/setuptools/dist.py:759:
+             SetuptoolsDeprecationWarning: License classifiers are deprecated.
+             !!
+       
+             
+             ********************************************************************************
+                     Please consider removing the following classifiers in favor of a
+             SPDX license expression:
+       
+                     License :: Public Domain
+       
+                     See
+             https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license
+             for details.
+             
+             ********************************************************************************
+       
+             !!
+               self._finalize_license_expression()
+             In file included from /app/.heroku/python/include/python3.11/Python.h:87,
+                              from src/_fastmath.c:31:
+             /app/.heroku/python/include/python3.11/cpython/pytime.h:208:60: warning:
+             ‘struct timespec’ declared inside parameter list will not be visible
+             outside of this definition or declaration
+               208 | PyAPI_FUNC(int) _PyTime_FromTimespec(_PyTime_t *tp, struct
+             timespec *ts);
+                   |
+             ^~~~~~~~
+             /app/.heroku/python/include/python3.11/cpython/pytime.h:213:56: warning:
+             ‘struct timespec’ declared inside parameter list will not be visible
+             outside of this definition or declaration
+               213 | PyAPI_FUNC(int) _PyTime_AsTimespec(_PyTime_t t, struct timespec
+             *ts);
+                   |                                                        ^~~~~~~~
+             /app/.heroku/python/include/python3.11/cpython/pytime.h:217:63: warning:
+             ‘struct timespec’ declared inside parameter list will not be visible
+             outside of this definition or declaration
+               217 | PyAPI_FUNC(void) _PyTime_AsTimespec_clamp(_PyTime_t t, struct
+             timespec *ts);
+                   |
+             ^~~~~~~~
+             src/_fastmath.c:33:10: fatal error: longintrepr.h: No such file or
+             directory
+                33 | #include <longintrepr.h>                                /* for
+             conversions */
+                   |          ^~~~~~~~~~~~~~~
+             compilation terminated.
+             error: command '/usr/bin/gcc' failed with exit code 1
+       
+             hint: This error likely indicates that you need to install a library
+             that provides "longintrepr.h" for `pycrypto@2.6.1`
+         help: `pycrypto` (v2.6.1) was included because `repl-nix-workspace` (v0.1.0)
+               depends on `pyrebase` (v3.0.18) which depends on `pycrypto`
+
+ !     Error: Unable to install dependencies using uv.
+ !     
+ !     See the log output above for more information.
+ !     Push rejected, failed to compile Python app.
+ !     Push failed

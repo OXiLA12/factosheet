@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Paiement Réussi - FactoSheet{% endblock %}
+
+{% block extra_css %}
+<style>
+    .success-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        padding: 2rem 0;
+    }
+
+    .success-card {
+        background: var(--surface);
+        border-radius: 2rem;
+        padding: 3rem;
+        box-shadow: var(--shadow);
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .success-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #FF9800, #FFB74D);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        animation: bounce 2s infinite;
+    }
+
+    .success-icon::before {
+        content: '💳';
+        font-size: 2rem;
+    }
+
+    .success-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #FF9800;
+    }
+
+    .success-subtitle {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .credit-info {
+        background: rgba(255, 152, 0, 0.05);
+        border: 2px solid rgba(255, 152, 0, 0.2);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin: 2rem 0;
+    }
+
+    .credit-amount {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #FF9800;
+        margin-bottom: 0.5rem;
+    }
+
+    .credit-label {
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+    }
+
+    .success-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .success-btn {
+        padding: 1rem 2rem;
+        border-radius: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .success-btn.primary {
+        background: linear-gradient(135deg, #FF9800, #FFB74D);
+        color: white;
+        box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+    }
+
+    .success-btn.primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 152, 0, 0.4);
+    }
+
+    .success-btn.secondary {
+        background: transparent;
+        color: #FF9800;
+        border: 2px solid #FF9800;
+    }
+
+    .success-btn.secondary:hover {
+        background: #FF9800;
+        color: white;
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-10px);
+        }
+        60% {
+            transform: translateY(-5px);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .success-card {
+            margin: 1rem;
+            padding: 2rem;
+        }
+        
+        .success-title {
+            font-size: 2rem;
+        }
+        
+        .success-actions {
+            flex-direction: column;
+        }
+        
+        .success-btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="success-container">
+        <div class="success-card fade-in-up">
+            <div class="success-icon"></div>
+            
+            <h1 class="success-title">Crédits Ajoutés !</h1>
+            
+            <p class="success-subtitle">
+                Votre pack de crédits a été acheté avec succès et ajouté à votre compte.
+            </p>
+            
+            <div class="credit-info" id="creditInfo">
+                <div class="credit-amount" id="creditsAdded">Chargement...</div>
+                <div class="credit-label">crédits ajoutés à votre compte</div>
+                <div style="margin-top: 1rem;">
+                    <strong>Solde total : <span id="totalBalance">Chargement...</span> crédits</strong>
+                </div>
+            </div>
+            
+            <div class="success-actions">
+                <a href="/dashboard" class="success-btn primary">
+                    🚀 Utiliser mes crédits
+                </a>
+                <a href="/pricing" class="success-btn secondary">
+                    💰 Acheter plus de crédits
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sessionId = '{{ session_id }}';
+        
+        if (sessionId) {
+            loadCreditInfo(sessionId);
+        }
+    });
+    
+    async function loadCreditInfo(sessionId) {
+        try {
+            const response = await fetch('/api/subscription/info');
+            if (response.ok) {
+                const info = await response.json();
+                
+                // Simuler les crédits ajoutés (à améliorer avec les données de session)
+                document.getElementById('creditsAdded').textContent = '50'; // Exemple
+                document.getElementById('totalBalance').textContent = info.credits_available || 0;
+            }
+        } catch (error) {
+            console.error('Erreur chargement info crédits:', error);
+            document.getElementById('creditsAdded').textContent = '?';
+            document.getElementById('totalBalance').textContent = '?';
+        }
+    }
+</script>
+{% endblock %}

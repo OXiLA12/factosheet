@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Abonnement Activé - FactoSheet{% endblock %}
+
+{% block extra_css %}
+<style>
+    .success-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        padding: 2rem 0;
+    }
+
+    .success-card {
+        background: var(--surface);
+        border-radius: 2rem;
+        padding: 3rem;
+        box-shadow: var(--shadow);
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .success-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #4CAF50, #81C784);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        animation: pulse 2s infinite;
+    }
+
+    .success-icon::before {
+        content: '✓';
+        font-size: 2.5rem;
+        color: white;
+        font-weight: bold;
+    }
+
+    .success-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--primary-color);
+    }
+
+    .success-subtitle {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .success-details {
+        background: rgba(76, 175, 80, 0.05);
+        border: 2px solid rgba(76, 175, 80, 0.2);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin: 2rem 0;
+        text-align: left;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(76, 175, 80, 0.1);
+    }
+
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .detail-value {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .success-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .success-btn {
+        padding: 1rem 2rem;
+        border-radius: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .success-btn.primary {
+        background: var(--gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+
+    .success-btn.primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+    }
+
+    .success-btn.secondary {
+        background: transparent;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+
+    .success-btn.secondary:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    @media (max-width: 768px) {
+        .success-card {
+            margin: 1rem;
+            padding: 2rem;
+        }
+        
+        .success-title {
+            font-size: 2rem;
+        }
+        
+        .success-actions {
+            flex-direction: column;
+        }
+        
+        .success-btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="success-container">
+        <div class="success-card fade-in-up">
+            <div class="success-icon"></div>
+            
+            <h1 class="success-title">Félicitations !</h1>
+            
+            <p class="success-subtitle">
+                Votre abonnement FactoSheet a été activé avec succès. 
+                Vous pouvez maintenant profiter de toutes les fonctionnalités de votre plan.
+            </p>
+            
+            <div class="success-details" id="subscriptionDetails">
+                <div class="detail-item">
+                    <span class="detail-label">Plan souscrit</span>
+                    <span class="detail-value" id="planName">Chargement...</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Crédits mensuels</span>
+                    <span class="detail-value" id="monthlyCredits">Chargement...</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Prochaine facturation</span>
+                    <span class="detail-value" id="nextBilling">Chargement...</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Statut</span>
+                    <span class="detail-value">✅ Actif</span>
+                </div>
+            </div>
+            
+            <div class="success-actions">
+                <a href="/dashboard" class="success-btn primary">
+                    🚀 Commencer l'extraction
+                </a>
+                <a href="/compte" class="success-btn secondary">
+                    ⚙️ Gérer mon compte
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sessionId = '{{ session_id }}';
+        
+        if (sessionId) {
+            loadSubscriptionDetails(sessionId);
+        }
+    });
+    
+    async function loadSubscriptionDetails(sessionId) {
+        try {
+            const response = await fetch('/api/subscription/info');
+            if (response.ok) {
+                const info = await response.json();
+                
+                document.getElementById('planName').textContent = info.plan_config.name;
+                document.getElementById('monthlyCredits').textContent = info.plan_config.credits_per_month + ' crédits';
+                
+                if (info.current_period_end) {
+                    const nextBilling = new Date(info.current_period_end);
+                    document.getElementById('nextBilling').textContent = nextBilling.toLocaleDateString('fr-FR');
+                } else {
+                    document.getElementById('nextBilling').textContent = 'Plan gratuit';
+                }
+            }
+        } catch (error) {
+            console.error('Erreur chargement détails:', error);
+        }
+    }
+</script>
+{% endblock %}

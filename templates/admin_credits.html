@@ -1,0 +1,400 @@
+{% extends "admin_simple.html" %}
+
+{% block content %}
+<div class="admin-header">
+    <h1 class="admin-title">Administration FactoSheet</h1>
+    <p class="admin-subtitle">{{ user_data.email }} • Super Administrateur</p>
+</div>
+
+<nav class="admin-nav">
+    <a href="/admin/dashboard" class="nav-tab">📊 Dashboard</a>
+    <a href="/admin/users" class="nav-tab">👥 Utilisateurs</a>
+    <a href="/admin/credits" class="nav-tab active">🪙 Crédits</a>
+    <a href="/admin/system" class="nav-tab">⚙️ Système</a>
+</nav>
+
+<div class="admin-content">
+    <div class="page-header">
+        <h2>Gestion des Crédits</h2>
+        <p>Ajouter des crédits aux comptes utilisateur et surveiller l'utilisation</p>
+    </div>
+
+    <div class="section-card">
+        <h3>Ajouter des crédits</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Adresse email de l'utilisateur</label>
+                <input type="email" id="credit-email" placeholder="utilisateur@exemple.com">
+            </div>
+            <div class="form-group">
+                <label>Nombre de crédits à ajouter</label>
+                <input type="number" id="credits-amount" placeholder="100" min="1" max="10000">
+            </div>
+            <div class="form-group">
+                <button class="btn btn-success" onclick="addCredits()">
+                    ➕ Ajouter crédits
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <h3>Aperçu des crédits</h3>
+        <div class="credits-overview">
+            <div class="credit-stat">
+                <div class="credit-number" id="total-system-credits">-</div>
+                <div class="credit-label">Total système</div>
+            </div>
+            <div class="credit-stat">
+                <div class="credit-number" id="average-credits">-</div>
+                <div class="credit-label">Moyenne par utilisateur</div>
+            </div>
+            <div class="credit-stat">
+                <div class="credit-number" id="low-credit-users">-</div>
+                <div class="credit-label">Utilisateurs &lt; 10 crédits</div>
+            </div>
+        </div>
+        <button class="btn btn-outline" onclick="loadCreditStats()">
+            🔄 Actualiser les statistiques
+        </button>
+    </div>
+
+    <div class="section-card">
+        <div class="section-header">
+            <h3>Détail des crédits par utilisateur</h3>
+            <button class="btn btn-outline" onclick="loadUserCredits()">
+                📊 Charger détails
+            </button>
+        </div>
+        
+        <div class="table-container">
+            <table class="data-table" id="credits-table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Plan</th>
+                        <th>Crédits disponibles</th>
+                        <th>Statut</th>
+                        <th>Action rapide</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-gray);">
+                            Cliquez sur "Charger détails" pour voir les crédits
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.admin-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-dark);
+}
+
+.page-header p {
+    color: var(--text-gray);
+    margin: 0;
+}
+
+.section-card {
+    background: white;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.section-card h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-header h3 {
+    margin: 0;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.form-group input {
+    padding: 0.75rem;
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.credits-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.credit-stat {
+    text-align: center;
+    padding: 1rem;
+    background: #F9FAFB;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+}
+
+.credit-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--success-color);
+    margin-bottom: 0.5rem;
+}
+
+.credit-label {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+}
+
+.table-container {
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.data-table th {
+    background: #F9FAFB;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.data-table tr:hover {
+    background: #F9FAFB;
+}
+
+.credit-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.credit-high { background: #D1FAE5; color: #065F46; }
+.credit-medium { background: #FEF3C7; color: #92400E; }
+.credit-low { background: #FEE2E2; color: #991B1B; }
+
+.btn-outline {
+    background: white;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.btn-outline:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .credits-overview {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+function addCredits() {
+    const email = document.getElementById('credit-email').value.trim();
+    const credits = parseInt(document.getElementById('credits-amount').value);
+    
+    if (!email || !credits) {
+        alert('Veuillez remplir tous les champs');
+        return;
+    }
+    
+    if (credits <= 0 || credits > 10000) {
+        alert('Nombre de crédits invalide (1-10000)');
+        return;
+    }
+    
+    fetch('/admin/super/add-credits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, credits: credits })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`${credits} crédits ajoutés à ${email}`);
+            document.getElementById('credit-email').value = '';
+            document.getElementById('credits-amount').value = '';
+            loadUserCredits();
+            loadCreditStats();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erreur de connexion');
+        console.error('Error:', error);
+    });
+}
+
+function loadCreditStats() {
+    fetch('/admin/get_users')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const users = data.users;
+            const totalCredits = users.reduce((sum, u) => sum + (u.credits_disponibles || 0), 0);
+            const avgCredits = users.length > 0 ? Math.round(totalCredits / users.length) : 0;
+            const lowCreditUsers = users.filter(u => (u.credits_disponibles || 0) < 10).length;
+            
+            document.getElementById('total-system-credits').textContent = totalCredits.toLocaleString();
+            document.getElementById('average-credits').textContent = avgCredits;
+            document.getElementById('low-credit-users').textContent = lowCreditUsers;
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function loadUserCredits() {
+    fetch('/admin/get_users')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const tbody = document.querySelector('#credits-table tbody');
+            tbody.innerHTML = '';
+            
+            data.users.forEach(user => {
+                const credits = user.credits_disponibles || 0;
+                const row = document.createElement('tr');
+                
+                let creditStatus, statusClass;
+                if (credits >= 100) {
+                    creditStatus = 'Élevé';
+                    statusClass = 'credit-high';
+                } else if (credits >= 10) {
+                    creditStatus = 'Moyen';
+                    statusClass = 'credit-medium';
+                } else {
+                    creditStatus = 'Faible';
+                    statusClass = 'credit-low';
+                }
+                
+                row.innerHTML = `
+                    <td>${user.email}</td>
+                    <td><strong>${user.plan || 'decouverte'}</strong></td>
+                    <td><strong>${credits}</strong></td>
+                    <td><span class="credit-status ${statusClass}">${creditStatus}</span></td>
+                    <td>
+                        <button class="btn btn-success btn-sm" onclick="quickAddCredits('${user.email}', 50)">
+                            +50
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function quickAddCredits(email, amount) {
+    if (confirm(`Ajouter ${amount} crédits à ${email} ?`)) {
+        fetch('/admin/super/add-credits', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, credits: amount })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`${amount} crédits ajoutés à ${email}`);
+                loadUserCredits();
+                loadCreditStats();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => alert('Erreur de connexion'));
+    }
+}
+
+// Charger les stats au démarrage
+document.addEventListener('DOMContentLoaded', loadCreditStats);
+</script>
+{% endblock %}

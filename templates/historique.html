@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Historique - FactoSheet{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem;">
+    <h1 style="text-align: center; margin-bottom: 2rem;">📊 Historique Firebase</h1>
+    
+    <!-- Statut Firebase -->
+    <div class="card" style="margin-bottom: 2rem; text-align: center;">
+        <h3>🔥 Statut Firebase</h3>
+        <div id="firebase-status" style="padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <div id="status-indicator" style="width: 8px; height: 8px; border-radius: 50%; background: #4CAF50;"></div>
+                <span id="status-message">Connexion...</span>
+            </div>
+        </div>
+        <button onclick="checkFirebaseStatus()" class="btn btn-secondary">🔄 Actualiser</button>
+        <a href="/auto-login#history" class="btn btn-primary">📁 Voir l'Historique Complet</a>
+    </div>
+
+    <!-- Historique Rapide -->
+    <div class="card">
+        <h3>📋 Historique des Extractions</h3>
+        <div id="history-preview" style="min-height: 200px;">
+            <div style="text-align: center; padding: 2rem; color: #666;">
+                Chargement de l'historique...
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function checkFirebaseStatus() {
+    try {
+        const response = await fetch('/api/firebase-status');
+        const data = await response.json();
+        
+        const indicator = document.getElementById('status-indicator');
+        const message = document.getElementById('status-message');
+        const statusDiv = document.getElementById('firebase-status');
+        
+        if (data.connected) {
+            indicator.style.background = '#4CAF50';
+            message.textContent = data.message;
+            statusDiv.style.background = 'rgba(76, 175, 80, 0.1)';
+        } else {
+            indicator.style.background = '#f44336';
+            message.textContent = data.message || 'Firebase non connecté';
+            statusDiv.style.background = 'rgba(244, 67, 54, 0.1)';
+        }
+    } catch (error) {
+        console.error('Erreur vérification Firebase:', error);
+        document.getElementById('status-message').textContent = 'Erreur de connexion';
+    }
+}
+
+// Vérifier le statut au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    checkFirebaseStatus();
+    
+    // Simuler un historique rapide (normalement depuis Firebase)
+    setTimeout(() => {
+        document.getElementById('history-preview').innerHTML = `
+            <div style="text-align: center; color: #666;">
+                <p>Historique Firebase disponible dans votre compte</p>
+                <a href="/auto-login#history" class="btn btn-primary">Accéder à l'historique complet</a>
+            </div>
+        `;
+    }, 1000);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,697 @@
+{% extends "base.html" %}
+
+{% block title %}Administration FactoSheet{% endblock %}
+
+{% block extra_head %}
+<style>
+    :root {
+        --primary-color: #3B82F6;
+        --success-color: #059669;
+        --warning-color: #D97706;
+        --danger-color: #DC2626;
+        --bg-light: #FFFFFF;
+        --text-dark: #111827;
+        --text-gray: #6B7280;
+        --border-light: #D1D5DB;
+        --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+        --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+    }
+
+    body {
+        background: var(--bg-light);
+        font-family: system-ui, -apple-system, sans-serif;
+        margin: 0;
+        color: var(--text-dark);
+    }
+
+    .admin-header {
+        background: var(--primary-color);
+        color: white;
+        padding: 1.5rem 2rem;
+        margin-bottom: 0;
+        box-shadow: var(--shadow-md);
+    }
+
+    .admin-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin: 0 0 0.25rem 0;
+    }
+
+    .admin-subtitle {
+        color: rgba(255,255,255,0.8);
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .admin-nav {
+        background: white;
+        border-bottom: 1px solid var(--border-light);
+        padding: 0 2rem;
+        display: flex;
+        gap: 0;
+        overflow-x: auto;
+    }
+
+    .nav-tab {
+        padding: 1rem 2rem;
+        background: none;
+        border: none;
+        color: var(--text-gray);
+        font-weight: 500;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s;
+        white-space: nowrap;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .nav-tab:hover {
+        color: var(--primary-color);
+        background: rgba(59, 130, 246, 0.05);
+    }
+
+    .nav-tab.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+        background: rgba(59, 130, 246, 0.05);
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    .admin-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-light);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .card-icon.users { background: linear-gradient(135deg, #3B82F6, #1D4ED8); }
+    .card-icon.credits { background: linear-gradient(135deg, #10B981, #059669); }
+    .card-icon.plans { background: linear-gradient(135deg, #8B5CF6, #7C3AED); }
+    .card-icon.danger { background: linear-gradient(135deg, #EF4444, #DC2626); }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin: 0;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-input, .form-select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--border-light);
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+        background: white;
+    }
+
+    .form-input:focus, .form-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary { background: var(--primary-color); color: white; }
+    .btn-success { background: var(--success-color); color: white; }
+    .btn-warning { background: var(--warning-color); color: white; }
+    .btn-danger { background: var(--danger-color); color: white; }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .users-table th, .users-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .users-table th {
+        background: var(--bg-light);
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 0.9rem;
+    }
+
+    .users-table tr:hover {
+        background: #F8FAFC;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-admin { background: #DBEAFE; color: #1D4ED8; }
+    .status-super { background: #EDE9FE; color: #7C3AED; }
+    .status-user { background: #DCFCE7; color: #059669; }
+
+    .danger-zone {
+        background: #FEF2F2;
+        border: 2px solid #FCA5A5;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .danger-title {
+        color: var(--danger-color);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .danger-description {
+        color: #991B1B;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .alert {
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+
+    .alert-success { background: #DCFCE7; color: #059669; border-left: 4px solid #10B981; }
+    .alert-error { background: #FEF2F2; color: #DC2626; border-left: 4px solid #EF4444; }
+
+    .stats-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .stats-row:last-child {
+        border-bottom: none;
+    }
+
+    .stat-label {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .stat-value {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--primary-color);
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+            padding: 0 1rem;
+        }
+
+        .admin-header {
+            padding: 1.5rem;
+        }
+
+        .users-table {
+            font-size: 0.9rem;
+        }
+
+        .users-table th, .users-table td {
+            padding: 0.75rem 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h1 class="admin-title">Administration FactoSheet</h1>
+    <p class="admin-subtitle">{{ user_data.email }} • Super Administrateur</p>
+</div>
+
+<nav class="admin-nav">
+    <a href="/admin/dashboard" class="nav-tab {{ 'active' if request.endpoint == 'admin_dashboard' }}">
+        📊 Dashboard
+    </a>
+    <a href="/admin/users" class="nav-tab {{ 'active' if request.endpoint == 'admin_users' }}">
+        👥 Utilisateurs
+    </a>
+    <a href="/admin/credits" class="nav-tab {{ 'active' if request.endpoint == 'admin_credits' }}">
+        🪙 Crédits
+    </a>
+    <a href="/admin/system" class="nav-tab {{ 'active' if request.endpoint == 'admin_system' }}">
+        ⚙️ Système
+    </a>
+</nav>
+
+<div class="dashboard-grid">
+    <!-- Statistiques -->
+    <div class="admin-card">
+        <div class="card-header">
+            <div class="card-icon users">📊</div>
+            <h2 class="card-title">Statistiques</h2>
+        </div>
+        
+        <div id="stats-content">
+            <div class="stats-row">
+                <span class="stat-label">Utilisateurs totaux</span>
+                <span class="stat-value" id="total-users">-</span>
+            </div>
+            <div class="stats-row">
+                <span class="stat-label">Administrateurs</span>
+                <span class="stat-value" id="total-admins">-</span>
+            </div>
+            <div class="stats-row">
+                <span class="stat-label">Crédits disponibles</span>
+                <span class="stat-value" id="total-credits">-</span>
+            </div>
+        </div>
+        
+        <button class="btn btn-primary" onclick="loadStats()" style="width: 100%; margin-top: 1rem;">
+            🔄 Actualiser les statistiques
+        </button>
+    </div>
+
+    <!-- Gestion des utilisateurs -->
+    <div class="admin-card">
+        <div class="card-header">
+            <div class="card-icon users">👥</div>
+            <h2 class="card-title">Gestion des utilisateurs</h2>
+        </div>
+
+        <!-- Changer le plan d'un utilisateur -->
+        <div class="form-group">
+            <label class="form-label">Email utilisateur</label>
+            <input type="email" id="user-email" class="form-input" placeholder="utilisateur@exemple.com">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Nouveau plan</label>
+            <select id="user-plan" class="form-select">
+                <option value="decouverte">Plan Découverte</option>
+                <option value="pro">Plan Pro</option>
+                <option value="business">Plan Business</option>
+            </select>
+        </div>
+
+        <button class="btn btn-warning" onclick="changeUserPlan()" style="width: 100%;">
+            🔄 Changer le plan
+        </button>
+    </div>
+
+    <!-- Gestion des crédits -->
+    <div class="admin-card">
+        <div class="card-header">
+            <div class="card-icon credits">🪙</div>
+            <h2 class="card-title">Crédits utilisateur</h2>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Email utilisateur</label>
+            <input type="email" id="credit-email" class="form-input" placeholder="utilisateur@exemple.com">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Nombre de crédits à ajouter</label>
+            <input type="number" id="credits-amount" class="form-input" placeholder="100" min="1" max="10000">
+        </div>
+
+        <button class="btn btn-success" onclick="addCredits()" style="width: 100%;">
+            ➕ Ajouter des crédits
+        </button>
+    </div>
+
+    <!-- Liste des utilisateurs -->
+    <div class="admin-card" style="grid-column: 1 / -1;">
+        <div class="card-header">
+            <div class="card-icon users">👥</div>
+            <h2 class="card-title">Liste des utilisateurs</h2>
+        </div>
+
+        <button class="btn btn-primary" onclick="loadUsers()" style="margin-bottom: 1rem;">
+            🔄 Charger les utilisateurs
+        </button>
+
+        <div style="overflow-x: auto;">
+            <table class="users-table" id="users-table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Plan</th>
+                        <th>Crédits</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #64748B; padding: 2rem;">
+                            Cliquez sur "Charger les utilisateurs" pour afficher la liste
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Zone de suppression -->
+        <div class="danger-zone">
+            <div class="danger-title">⚠️ Zone de suppression</div>
+            <div class="danger-description">
+                Suppression définitive d'un compte utilisateur. Cette action est irréversible.
+            </div>
+            
+            <div style="display: flex; gap: 1rem; align-items: end;">
+                <div style="flex: 1;">
+                    <label class="form-label">Email du compte à supprimer</label>
+                    <input type="email" id="delete-email" class="form-input" placeholder="utilisateur@supprimer.com">
+                </div>
+                <button class="btn btn-danger" onclick="deleteUser()" id="delete-btn">
+                    🗑️ Supprimer le compte
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="alert-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
+
+<script>
+function showAlert(message, type = 'success') {
+    const alertContainer = document.getElementById('alert-container');
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.textContent = message;
+    
+    alertContainer.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+
+function loadStats() {
+    fetch('/admin/get_users')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const users = data.users;
+            const totalUsers = users.length;
+            const totalAdmins = users.filter(u => u.is_admin).length;
+            const totalCredits = users.reduce((sum, u) => sum + (u.credits_disponibles || 0), 0);
+            
+            document.getElementById('total-users').textContent = totalUsers;
+            document.getElementById('total-admins').textContent = totalAdmins;
+            document.getElementById('total-credits').textContent = totalCredits.toLocaleString();
+            
+            showAlert('Statistiques mises à jour', 'success');
+        } else {
+            showAlert('Erreur lors du chargement des statistiques', 'error');
+        }
+    })
+    .catch(error => {
+        showAlert('Erreur de connexion', 'error');
+        console.error('Error:', error);
+    });
+}
+
+function changeUserPlan() {
+    const email = document.getElementById('user-email').value.trim();
+    const plan = document.getElementById('user-plan').value;
+    
+    if (!email) {
+        showAlert('Veuillez saisir un email', 'error');
+        return;
+    }
+    
+    fetch('/admin/super/change-plan', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: email,
+            plan: plan
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(`Plan changé vers ${plan} pour ${email}`, 'success');
+            document.getElementById('user-email').value = '';
+            loadUsers();
+        } else {
+            showAlert(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showAlert('Erreur de connexion', 'error');
+        console.error('Error:', error);
+    });
+}
+
+function addCredits() {
+    const email = document.getElementById('credit-email').value.trim();
+    const credits = parseInt(document.getElementById('credits-amount').value);
+    
+    if (!email || !credits) {
+        showAlert('Veuillez remplir tous les champs', 'error');
+        return;
+    }
+    
+    fetch('/admin/super/add-credits', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: email,
+            credits: credits
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(`${credits} crédits ajoutés à ${email}`, 'success');
+            document.getElementById('credit-email').value = '';
+            document.getElementById('credits-amount').value = '';
+            loadUsers();
+        } else {
+            showAlert(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showAlert('Erreur de connexion', 'error');
+        console.error('Error:', error);
+    });
+}
+
+function loadUsers() {
+    fetch('/admin/get_users')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const tbody = document.querySelector('#users-table tbody');
+            tbody.innerHTML = '';
+            
+            data.users.forEach(user => {
+                const row = document.createElement('tr');
+                
+                const statusBadge = user.is_admin ? 
+                    (user.admin_level === 'super_admin' ? '<span class="status-badge status-super">Super Admin</span>' :
+                     '<span class="status-badge status-admin">Admin</span>') :
+                    '<span class="status-badge status-user">Utilisateur</span>';
+                
+                row.innerHTML = `
+                    <td>${user.email}</td>
+                    <td><strong>${user.plan || 'decouverte'}</strong></td>
+                    <td>${user.credits_disponibles || 0}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <button class="btn btn-danger" onclick="confirmDelete('${user.uid}', '${user.email}')" 
+                                style="padding: 0.5rem 1rem; font-size: 0.8rem;">
+                            🗑️
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            showAlert(`${data.users.length} utilisateurs chargés`, 'success');
+        } else {
+            showAlert('Erreur lors du chargement des utilisateurs', 'error');
+        }
+    })
+    .catch(error => {
+        showAlert('Erreur de connexion', 'error');
+        console.error('Error:', error);
+    });
+}
+
+function deleteUser() {
+    const email = document.getElementById('delete-email').value.trim();
+    if (!email) {
+        showAlert('Veuillez saisir un email', 'error');
+        return;
+    }
+    
+    confirmDelete(null, email);
+}
+
+function confirmDelete(userId, email) {
+    if (confirm(`⚠️ ATTENTION: Supprimer définitivement le compte de ${email}?\n\nCette action supprimera:\n- Le compte utilisateur\n- Toutes ses données\n- Son historique\n\nTaper "SUPPRIMER" pour confirmer`)) {
+        const confirmation = prompt(`Pour confirmer, tapez: SUPPRIMER`);
+        if (confirmation === "SUPPRIMER") {
+            performDelete(userId, email);
+        } else {
+            showAlert('Suppression annulée', 'error');
+        }
+    }
+}
+
+function performDelete(userId, email) {
+    const deleteBtn = document.getElementById('delete-btn');
+    const originalText = deleteBtn.innerHTML;
+    
+    deleteBtn.innerHTML = '⏳ Suppression...';
+    deleteBtn.disabled = true;
+    
+    // Si pas d'userId, chercher l'utilisateur
+    if (!userId) {
+        fetch('/admin/get_users')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const user = data.users.find(u => u.email === email);
+                if (user) {
+                    executeDelete(user.uid, email);
+                } else {
+                    showAlert(`Utilisateur ${email} non trouvé`, 'error');
+                    resetDeleteButton();
+                }
+            } else {
+                showAlert('Erreur lors de la recherche', 'error');
+                resetDeleteButton();
+            }
+        })
+        .catch(error => {
+            showAlert('Erreur de connexion', 'error');
+            resetDeleteButton();
+        });
+    } else {
+        executeDelete(userId, email);
+    }
+    
+    function executeDelete(uid, userEmail) {
+        fetch('/admin/delete_user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                user_id: uid,
+                email: userEmail,
+                confirm: true
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert(`✅ Compte ${userEmail} supprimé`, 'success');
+                document.getElementById('delete-email').value = '';
+                loadUsers();
+            } else {
+                showAlert(`Erreur: ${data.message}`, 'error');
+            }
+        })
+        .catch(error => {
+            showAlert('Erreur lors de la suppression', 'error');
+        })
+        .finally(() => {
+            resetDeleteButton();
+        });
+    }
+    
+    function resetDeleteButton() {
+        deleteBtn.innerHTML = originalText;
+        deleteBtn.disabled = false;
+    }
+}
+
+// Charger les statistiques au démarrage
+document.addEventListener('DOMContentLoaded', function() {
+    loadStats();
+});
+</script>
+{% endblock %}

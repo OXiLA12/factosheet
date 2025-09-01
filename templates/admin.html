@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel d'Administration - FactoSheet</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .admin-header {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .admin-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .admin-section h3 {
+            color: #2E7D32;
+            margin-top: 0;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        .credit-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .credit-form input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        
+        .credit-form button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .credit-form button:hover {
+            background: #2E7D32;
+        }
+        
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .users-table th,
+        .users-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .users-table th {
+            background: #f5f5f5;
+            font-weight: 600;
+        }
+        
+        .users-table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .admin-badge {
+            background: #FF9800;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>🔧 Panel d'Administration</h1>
+            <p>Bienvenue {{ user_data.prenom }} {{ user_data.nom }} - Super Admin</p>
+            <a href="/dashboard" style="color: white; text-decoration: underline;">← Retour au Dashboard</a>
+        </div>
+
+        <!-- Section Ajout de Crédits -->
+        <div class="admin-section">
+            <h3>💳 Gestion des Crédits</h3>
+            
+            <div id="credit-messages"></div>
+            
+            <div class="credit-form">
+                <input type="email" id="user-email" placeholder="Email de l'utilisateur" style="width: 250px;">
+                <input type="number" id="credits-amount" placeholder="Nombre de crédits" min="1" style="width: 150px;">
+                <button onclick="addCredits()">Ajouter des Crédits</button>
+            </div>
+        </div>
+
+        <!-- Section Liste des Utilisateurs -->
+        <div class="admin-section">
+            <h3>👥 Liste des Utilisateurs</h3>
+            
+            <button onclick="loadUsers()" style="background: #2196F3; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">
+                🔄 Actualiser la Liste
+            </button>
+            
+            <div id="users-container">
+                <p>Cliquez sur "Actualiser la Liste" pour charger les utilisateurs...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showMessage(message, type = 'success') {
+            const container = document.getElementById('credit-messages');
+            container.innerHTML = `<div class="${type}-message" style="display: block;">${message}</div>`;
+            
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        async function addCredits() {
+            const email = document.getElementById('user-email').value;
+            const credits = document.getElementById('credits-amount').value;
+            
+            if (!email || !credits) {
+                showMessage('Veuillez remplir tous les champs', 'error');
+                return;
+            }
+            
+            if (parseInt(credits) <= 0) {
+                showMessage('Le nombre de crédits doit être positif', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/add_credits', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        credits: parseInt(credits)
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage(`✅ ${result.message}`, 'success');
+                    document.getElementById('user-email').value = '';
+                    document.getElementById('credits-amount').value = '';
+                    loadUsers(); // Actualiser la liste
+                } else {
+                    showMessage(`❌ ${result.message}`, 'error');
+                }
+                
+            } catch (error) {
+                showMessage(`❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadUsers() {
+            const container = document.getElementById('users-container');
+            container.innerHTML = '<p>⏳ Chargement des utilisateurs...</p>';
+            
+            try {
+                const response = await fetch('/admin/get_users');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const users = result.users;
+                    
+                    if (users.length === 0) {
+                        container.innerHTML = '<p>Aucun utilisateur trouvé.</p>';
+                        return;
+                    }
+                    
+                    let tableHTML = `
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Nom</th>
+                                    <th>Plan</th>
+                                    <th>Crédits Disp.</th>
+                                    <th>Crédits Utilisés</th>
+                                    <th>Factures</th>
+                                    <th>Admin</th>
+                                    <th>Inscription</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    users.forEach(user => {
+                        const createdDate = user.created_at ? new Date(user.created_at).toLocaleDateString('fr-FR') : 'N/A';
+                        const adminBadge = user.is_admin ? '<span class="admin-badge">ADMIN</span>' : '';
+                        
+                        tableHTML += `
+                            <tr>
+                                <td>${user.email}</td>
+                                <td>${user.prenom} ${user.nom}</td>
+                                <td>${user.plan}</td>
+                                <td>${user.credits_disponibles}</td>
+                                <td>${user.credits_utilises}</td>
+                                <td>${user.factures_utilisees}</td>
+                                <td>${adminBadge}</td>
+                                <td>${createdDate}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tableHTML += '</tbody></table>';
+                    container.innerHTML = tableHTML;
+                    
+                } else {
+                    container.innerHTML = `<p style="color: red;">❌ ${result.message}</p>`;
+                }
+                
+            } catch (error) {
+                container.innerHTML = `<p style="color: red;">❌ Erreur: ${error.message}</p>`;
+            }
+        }
+
+        // Charger les utilisateurs au démarrage
+        document.addEventListener('DOMContentLoaded', loadUsers);
+    </script>
+</body>
+</html>

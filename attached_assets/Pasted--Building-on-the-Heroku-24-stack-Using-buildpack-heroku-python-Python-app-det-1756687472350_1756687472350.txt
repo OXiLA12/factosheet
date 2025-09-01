@@ -1,0 +1,102 @@
+-----> Building on the Heroku-24 stack
+-----> Using buildpack: heroku/python
+-----> Python app detected
+ !     Error: Couldn't find any supported Python package manager files.[0m
+ !     
+ !     A Python app on Heroku must have either a 'requirements.txt',
+ !     'Pipfile.lock', 'poetry.lock' or 'uv.lock' package manager file
+ !     in the root directory of its source code.
+ !     
+ !     Currently the root directory of your app contains:
+ !     
+ !     advanced_admin_system.py
+ !     anomaly_detector.py
+ !     app.py
+ !     attached_assets/
+ !     backup_system.py
+ !     CLEANED_PROJECT_STRUCTURE.md
+ !     contextual_help.py
+ !     credit_system.py
+ !     customs_classifier.py
+ !     DEPLOYMENT_GUIDE.md
+ !     DEPLOY_STEPS.md
+ !     .env.example
+ !     export_templates.py
+ !     FILENAME_FIX.md
+ !     FINAL_DEPLOY_STEP.md
+ !     FINAL_GITHUB_STEPS.md
+ !     firebase_auth_flask.py
+ !     firebase_credit_system.py
+ !     firebase_history.py
+ !     flask_app.py
+ !     GITHUB_STRUCTURE_FIX.md
+ !     .gitignore
+ !     GUIDE_UPLOAD_TEMPLATES.md
+ !     HEROKU_BUILDPACK_FIX.md
+ !     HEROKU_CONFIG_GUIDE.md
+ !     HEROKU_DEBUG_GUIDE.md
+ !     HEROKU_DEPENDENCIES_FIX.md
+ !     HEROKU_DEPLOY_FINAL.md
+ !     HEROKU_FIX_FILES.md
+ !     HEROKU_FORCE_PIP.md
+ !     HEROKU_LOGS_CHECK.md
+ !     HEROKU_SESSION_FIX.md
+ !     HEROKU_UV_FIX.md
+ !     homepage.py
+ !     image_processor.py
+ !     invoice_extractor.py
+ !     learning_system.py
+ !     legal_pages.py
+ !     MANUAL_REQUIREMENTS_CREATE.md
+ !     Nomenclature douanière 2025.xlsx
+ !     notification_system.py
+ !     pdf_processor.py
+ !     pdf_vision_extractor.py
+ !     plan_restrictions.py
+ !     precise_credit_system.py
+ !     pricing_page_clean.py
+ !     privacy_policy.py
+ !     Procfile
+ !     __pycache__/
+ !     pyproject.toml
+ !     .python-version
+ !     PYTHON_VERSION_FIX.md
+ !     README.md
+ !     .replit
+ !     replit.md
+ !     REQUIREMENTS_FINAL_FIX.txt
+ !     REQUIREMENTS_FIXED.txt
+ !     REQUIREMENTS_HEROKU_CLEAN.txt
+ !     REQUIREMENTS_SIMPLE.md
+ !     static/
+ !     stripe_payment.py
+ !     subscription_manager.py
+ !     templates/
+ !     TEMPLATES_MISSING_FIX.md
+ !     template_system.py
+ !     UPLOAD_GITHUB_SIMPLE.md
+ !     UPLOAD_TEMPLATES_SOLUTION.md
+ !     validation_engine.py
+ !     WERKZEUG_FIX.md
+ !     
+ !     If your app already has a package manager file, check that it:
+ !     
+ !     1. Is in the top level directory (not a subdirectory).
+ !     2. Has the correct spelling (the filenames are case-sensitive).
+ !     3. Isn't listed in '.gitignore' or '.slugignore'.
+ !     4. Has been added to the Git repository using 'git add --all'
+ !        and then committed using 'git commit'.
+ !     
+ !     Otherwise, add a package manager file to your app. If your app has
+ !     no dependencies, then create an empty 'requirements.txt' file.
+ !     
+ !     If you aren't sure which package manager to use, we recommend
+ !     trying uv, since it supports lockfiles, is extremely fast, and
+ !     is actively maintained by a full-time team:
+ !     https://docs.astral.sh/uv/
+ !     
+ !     For help with using Python on Heroku, see:
+ !     https://devcenter.heroku.com/articles/getting-started-with-python
+ !     https://devcenter.heroku.com/articles/python-support
+ !     Push rejected, failed to compile Python app.
+ !     Push failed

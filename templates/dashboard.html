@@ -1,0 +1,1298 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - FactoSheet{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        padding: 2rem 0;
+    }
+
+    .upload-zone {
+        border: 3px dashed var(--border-color);
+        border-radius: 1.5rem;
+        padding: 3rem 2rem;
+        text-align: center;
+        background: var(--surface);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragover {
+        border-color: var(--primary-color);
+        background: rgba(76, 175, 80, 0.05);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .upload-zone.processing {
+        border-color: var(--accent-color);
+        background: rgba(0, 122, 255, 0.05);
+    }
+
+    .upload-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--gradient);
+        border-radius: 50%;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .upload-zone:hover .upload-icon {
+        transform: scale(1.1);
+    }
+
+    .process-indicator {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin: 2rem 0;
+        padding: 1rem 2rem;
+        background: white;
+        border-radius: 1rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .process-step {
+        padding: 0.5rem 1rem;
+        border-radius: 1.5rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .process-step.active {
+        background: var(--accent-color);
+        color: white;
+    }
+
+    .process-step.completed {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    /* Styles pour le scan mobile */
+    .mobile-scan-section {
+        margin: 2rem 0;
+    }
+
+    .scan-divider {
+        text-align: center;
+        margin: 1.5rem 0;
+        position: relative;
+    }
+
+    .scan-divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: var(--border-color);
+        z-index: 0;
+    }
+
+    .scan-divider span {
+        background: var(--bg-primary);
+        color: var(--text-secondary);
+        padding: 0 1rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        position: relative;
+        z-index: 1;
+    }
+
+    .mobile-scan-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #FF9800, #FFB74D);
+        color: white;
+        border: none;
+        border-radius: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 152, 0, 0.2);
+    }
+
+    .mobile-scan-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 152, 0, 0.3);
+    }
+
+    .mobile-scan-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .scan-icon {
+        font-size: 2rem;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+    }
+
+    .scan-text {
+        text-align: left;
+    }
+
+    .scan-text strong {
+        display: block;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .scan-text small {
+        opacity: 0.9;
+        font-size: 0.9rem;
+    }
+
+    /* Masquer le bouton sur desktop si pas de support caméra */
+    @media (min-width: 1024px) {
+        .mobile-scan-section {
+            display: none;
+        }
+    }
+
+    /* Afficher uniquement sur mobile/tablette avec support caméra */
+    @media (max-width: 1023px) {
+        .mobile-scan-section.no-camera {
+            display: none;
+        }
+    }
+
+    .process-step.pending {
+        background: #f5f5f7;
+        color: var(--text-secondary);
+    }
+
+    .results-container {
+        background: var(--surface);
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        margin-top: 2rem;
+        display: none;
+    }
+
+    .results-container.show {
+        display: block;
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    .results-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .results-table th,
+    .results-table td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .results-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .file-preview {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-top: 1rem;
+        display: none;
+    }
+
+    .file-preview.show {
+        display: block;
+    }
+
+    .file-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e0e0e0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--gradient);
+        width: 0%;
+        transition: width 0.3s ease;
+        border-radius: 4px;
+    }
+
+    .export-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border-color);
+    }
+
+    .export-options {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .export-options .form-label {
+        margin: 0;
+        font-weight: 600;
+        color: var(--text-primary);
+        white-space: nowrap;
+    }
+
+    .export-options .form-select {
+        flex: 1;
+        max-width: 300px;
+        padding: 0.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        background: white;
+    }
+
+    .export-buttons > button {
+        margin: 0;
+    }
+
+    @media (min-width: 768px) {
+        .export-buttons {
+            flex-direction: row;
+            align-items: center;
+        }
+        
+        .export-options {
+            margin-bottom: 0;
+            margin-right: auto;
+        }
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--surface);
+        padding: 1.5rem;
+        border-radius: 1rem;
+        box-shadow: var(--shadow);
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .extraction-progress {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .progress-bar-container {
+        position: relative;
+        width: 100%;
+        height: 12px;
+        background: #e0e0e0;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #4CAF50, #66BB6A);
+        border-radius: 6px;
+        width: 0%;
+        transition: width 0.3s ease-in-out;
+        position: relative;
+        box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+    }
+
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        animation: shimmer 1.5s infinite linear;
+        border-radius: 6px;
+    }
+
+    .progress-text-overlay {
+        position: absolute;
+        top: -35px;
+        right: 0;
+        font-weight: 700;
+        color: var(--primary-color);
+        font-size: 1rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+        50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+    }
+
+    .processing-step {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        background: #f5f5f7;
+        color: var(--text-secondary);
+    }
+
+    .processing-step.active {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+    }
+
+    .processing-step.completed {
+        background: rgba(76, 175, 80, 0.1);
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .processing-animation {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .dot:nth-child(1) { animation-delay: -0.32s; }
+    .dot:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes bounce {
+        0%, 80%, 100% {
+            transform: scale(0);
+        }
+        40% {
+            transform: scale(1);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .export-buttons {
+            flex-direction: column;
+        }
+        
+        .process-indicator {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container dashboard-container">
+    <!-- Statistiques utilisateur -->
+    <div class="stats-grid fade-in-up">
+        <div class="stat-card">
+            <div class="stat-number">{{ user_data.credits_disponibles|default(10) }}</div>
+            <div class="stat-label">Crédits restants</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ user_data.credits_utilises|default(0) }}</div>
+            <div class="stat-label">Factures traitées</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ user_data.plan|default('Découverte')|title }}</div>
+            <div class="stat-label">Plan actuel</div>
+        </div>
+        {% if user_data.get('is_admin') and user_data.get('admin_level') == 'super' %}
+        <div class="stat-card" style="background: linear-gradient(135deg, #1976d2, #1565c0); color: white; cursor: pointer;" onclick="window.location.href='/super-admin'">
+            <div class="stat-number">🛡️</div>
+            <div class="stat-label">Super Admin</div>
+        </div>
+        {% elif user_data.get('is_admin') %}
+        <div class="stat-card" style="background: linear-gradient(135deg, #FF9800, #F57C00); color: white; cursor: pointer;" onclick="window.location.href='/admin'">
+            <div class="stat-number">👑</div>
+            <div class="stat-label">Administration</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Avertissement plan gratuit -->
+    {% if user_data.plan == 'decouverte' %}
+    <div class="alert alert-info fade-in-up" style="background: linear-gradient(135deg, #2196F3, #21CBF3); color: white; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem; border: none;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M13,13H11V7H13M12,17.3A1.3,1.3 0 0,1 10.7,16A1.3,1.3 0 0,1 12,14.7A1.3,1.3 0 0,1 13.3,16A1.3,1.3 0 0,1 12,17.3M15.73,3H8.27L3,8.27V15.73L8.27,21H15.73L21,15.73V8.27L15.73,3Z"/>
+            </svg>
+            <div style="flex: 1;">
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">Plan Découverte - Fonctionnalités limitées</div>
+                <div style="font-size: 0.9rem; opacity: 0.9;">
+                    La classification douanière avec codes SH est disponible à partir du plan Pro (99€/mois). 
+                    Votre extraction affichera uniquement les données de base des factures.
+                </div>
+            </div>
+            <a href="{{ url_for('pricing') }}" class="btn" style="background: white; color: #2196F3; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none; font-weight: 600;">
+                Voir les plans
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Indicateur de processus -->
+    <div class="process-indicator fade-in-up">
+        <div class="process-step active" id="step1">1. Upload</div>
+        <div style="color: var(--text-secondary);">→</div>
+        <div class="process-step pending" id="step2">2. Traitement</div>
+        <div style="color: var(--text-secondary);">→</div>
+        <div class="process-step pending" id="step3">3. Résultats</div>
+    </div>
+
+    <!-- Zone d'upload -->
+    <div class="upload-zone fade-in-up" 
+         id="uploadZone" 
+         ondrop="handleDrop(event)" 
+         ondragover="handleDragOver(event)" 
+         ondragleave="handleDragLeave(event)"
+         onclick="document.getElementById('fileInput').click()">
+        
+        <div class="upload-icon">
+            <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+            </svg>
+        </div>
+        
+        <h3 style="margin-bottom: 0.5rem; font-weight: 600;">Glissez votre facture ici</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+            ou cliquez pour sélectionner un fichier
+        </p>
+        
+        <div style="background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.2); border-radius: 8px; padding: 12px; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg width="16" height="16" fill="#4CAF50" viewBox="0 0 24 24">
+                    <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11.5C15.4,11.9 16,12.4 16,13V16C16,17.1 15.1,18 14,18H10C8.9,18 8,17.1 8,16V13C8,12.4 8.4,11.9 9,11.5V10C9,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.2,9.2 10.2,10V11.5H13.8V10C13.8,9.2 12.8,8.2 12,8.2Z"/>
+                </svg>
+                <span style="color: #4CAF50; font-weight: 500; font-size: 14px;">🔒 Vos données sont sécurisées : traitement confidentiel, aucun stockage permanent, suppression automatique après extraction</span>
+            </div>
+        </div>
+        
+        <div class="btn btn-primary" style="pointer-events: none;">
+            Choisir un fichier
+        </div>
+        
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 1rem;">
+            Formats supportés : PDF, JPG, PNG, WEBP • Taille max : 50 MB
+        </p>
+        
+        <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.webp" style="display: none;" onchange="handleFileSelect(event)">
+    </div>
+
+    <!-- Bouton de scan mobile -->
+    <div class="mobile-scan-section fade-in-up" id="mobileScanSection">
+        <div class="scan-divider">
+            <span>OU</span>
+        </div>
+        <button class="mobile-scan-btn" onclick="openMobileCamera()" id="cameraButton">
+            <div class="scan-icon">📱</div>
+            <div class="scan-text">
+                <strong>Scanner avec la caméra</strong>
+                <small>Prenez une photo de votre facture</small>
+            </div>
+        </button>
+    </div>
+
+    <!-- Aperçu du fichier -->
+    <div class="file-preview" id="filePreview">
+        <div class="file-info">
+            <svg width="24" height="24" fill="var(--primary-color)" viewBox="0 0 24 24">
+                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+            </svg>
+            <div>
+                <div style="font-weight: 600;" id="fileName"></div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);" id="fileSize"></div>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div style="text-align: center; margin-top: 1rem;">
+            <button class="btn btn-primary" onclick="processFile()" id="processBtn">
+                Traiter la facture
+            </button>
+        </div>
+    </div>
+
+    <!-- Zone de traitement avec messages humoristiques -->
+    <div id="processingZone" style="display: none; text-align: center; padding: 2rem; background: linear-gradient(135deg, #f8f9fa, #ffffff); border-radius: 1rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
+        
+        <div style="margin-bottom: 2rem;">
+            <h3 id="progressTitle" style="color: var(--primary-color); margin-bottom: 0.5rem;">Traitement en cours...</h3>
+            <p id="pageInfo" style="color: var(--text-secondary); font-size: 0.9rem;">Initialisation</p>
+        </div>
+
+        <!-- Étapes de traitement visuelles -->
+        <div style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+            <div id="stepReading" class="processing-step">
+                📖 Lecture PDF
+            </div>
+            <div style="color: var(--text-secondary);">→</div>
+            <div id="stepExtracting" class="processing-step">
+                🤖 Extraction IA
+            </div>
+            <div style="color: var(--text-secondary);">→</div>
+            <div id="stepClassifying" class="processing-step">
+                🏷️ Classification
+            </div>
+            <div style="color: var(--text-secondary);">→</div>
+            <div id="stepFinalizing" class="processing-step">
+                ✨ Finalisation
+            </div>
+        </div>
+
+        <!-- Barre de progression avec pourcentage -->
+        <div style="width: 100%; background: #f0f0f0; border-radius: 25px; height: 8px; margin-bottom: 1rem; position: relative; overflow: hidden;">
+            <div id="progressBar" style="height: 100%; background: linear-gradient(90deg, #4CAF50, #81C784); border-radius: 25px; width: 0%; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); position: relative;">
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: shimmer 2s infinite;"></div>
+            </div>
+            <div id="progressPercent" style="position: absolute; top: -25px; right: 0; font-size: 0.8rem; color: var(--primary-color); font-weight: 600;">0%</div>
+        </div>
+
+        <!-- Messages humoristiques -->
+        <div style="background: rgba(76, 175, 80, 0.1); border-radius: 1rem; padding: 1.5rem; margin-bottom: 1.5rem; border-left: 4px solid var(--primary-color);">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
+                <div style="width: 12px; height: 12px; background: var(--primary-color); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite;"></div>
+                <div style="font-size: 1.1rem; color: var(--primary-color); font-weight: 600;">IA FactoSheet au travail</div>
+                <div style="width: 12px; height: 12px; background: var(--primary-color); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite 0.5s;"></div>
+            </div>
+            <p id="progressDetailsText" style="margin: 0; color: var(--text-color); font-style: italic; font-size: 1rem;">
+                Patientez… ou allez chercher un café, ça ira plus vite ☕
+            </p>
+        </div>
+
+        <!-- Indicateur technique optionnel -->
+        <div style="font-size: 0.8rem; color: var(--text-secondary); opacity: 0.7;">
+            🔒 Traitement sécurisé • 🚀 IA FactoSheet • ⚡ Analyse en temps réel
+        </div>
+
+    </div>
+
+    <!-- Résultats -->
+    <div class="results-container" id="resultsContainer">
+        <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <svg width="24" height="24" fill="var(--primary-color)" viewBox="0 0 24 24">
+                <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M11,16.5L18,9.5L16.59,8.09L11,13.67L7.91,10.59L6.5,12L11,16.5Z"/>
+            </svg>
+            Extraction réussie
+        </h3>
+        
+        <div id="extractedData">
+            <!-- Les données extraites seront affichées ici -->
+        </div>
+        
+        <div class="export-buttons">
+            <div class="export-options">
+                <label for="exportFormat" class="form-label">Format d'export:</label>
+                <select id="exportFormat" class="form-select">
+                    <option value="excel">📊 Excel (.xlsx)</option>
+                    <option value="csv">📄 CSV (.csv)</option>
+                    <option value="douanier">🏛️ Déclaration Douanière</option>
+                    <option value="comptabilite">💼 Format Comptable</option>
+                </select>
+            </div>
+            
+            <button class="btn btn-primary" onclick="previewData()">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
+                </svg>
+                Prévisualiser & Modifier
+            </button>
+            
+            <button class="btn btn-secondary" onclick="exportData()">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                </svg>
+                Export Direct
+            </button>
+            
+            <button class="btn btn-secondary" onclick="exportToCSV()">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                </svg>
+                Export CSV
+            </button>
+            
+            <button class="btn btn-outline" onclick="startNewExtraction()">
+                🔄 Nouvelle facture
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Vérifier le support de la caméra au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileScanSection = document.getElementById('mobileScanSection');
+        const cameraButton = document.getElementById('cameraButton');
+        
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            mobileScanSection.classList.add('no-camera');
+            if (cameraButton) {
+                cameraButton.disabled = true;
+                cameraButton.innerHTML = '<div class="scan-icon">❌</div><div class="scan-text"><strong>Caméra non supportée</strong><small>Votre navigateur ne supporte pas l\'accès caméra</small></div>';
+            }
+        }
+    });
+</script>
+<script>
+    let currentFile = null;
+    let extractedData = null;
+
+    function handleDragOver(event) {
+        event.preventDefault();
+        document.getElementById('uploadZone').classList.add('dragover');
+    }
+
+    function handleDragLeave(event) {
+        event.preventDefault();
+        document.getElementById('uploadZone').classList.remove('dragover');
+    }
+
+    function handleDrop(event) {
+        event.preventDefault();
+        const files = event.dataTransfer.files;
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
+        document.getElementById('uploadZone').classList.remove('dragover');
+    }
+
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            handleFile(file);
+        }
+    }
+
+    function handleFile(file) {
+        const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.webp'];
+        
+        const isValidType = allowedTypes.includes(file.type) || 
+                           allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+        
+        if (!isValidType) {
+            showNotification('Formats acceptés: PDF, JPG, PNG, WEBP', 'error');
+            return;
+        }
+
+        if (file.size > 50 * 1024 * 1024) {
+            showNotification('Le fichier est trop volumineux (max 50 MB)', 'error');
+            return;
+        }
+
+        currentFile = file;
+        
+        // Afficher l'aperçu du fichier
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+        document.getElementById('filePreview').classList.add('show');
+        
+        // Mise à jour des étapes
+        updateProcessStep(1, 'completed');
+        
+        showNotification('Fichier sélectionné avec succès', 'success');
+    }
+
+    async function processFile() {
+        if (!currentFile) return;
+
+        // Vérifier d'abord si l'utilisateur a assez de crédits
+        try {
+            const creditsCheckResponse = await fetch('/api/check_credits?pages=1');
+            const creditsData = await creditsCheckResponse.json();
+            
+            if (!creditsData.success || !creditsData.has_enough_credits) {
+                const remainingCredits = creditsData.credits_available || 0;
+                showNotification(`Crédits insuffisants. Vous avez ${remainingCredits} crédits restants.`, 'error');
+                return;
+            }
+        } catch (error) {
+            console.warn('Impossible de vérifier les crédits:', error);
+        }
+
+        // Interface de traitement simple comme Streamlit
+        document.getElementById('uploadZone').style.display = 'none';
+        document.getElementById('filePreview').style.display = 'none';
+        document.getElementById('processingZone').style.display = 'block';
+        
+        updateProcessStep(2, 'active');
+
+        // Démarrer les messages humoristiques
+        startFunnyMessageRotation();
+
+        try {
+            // Étape 1: Convertir le fichier en base64 
+            const fileBase64 = await convertFileToBase64(currentFile);
+            
+            // Étape 2: Démarrer l'extraction directement (comme Streamlit)
+            const formData = new FormData();
+            formData.append('file', currentFile);
+            
+            const extractResponse = await fetch('/extract', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const extractResult = await extractResponse.json();
+            
+            if (!extractResult.success) {
+                throw new Error(extractResult.message);
+            }
+            
+            const extractionId = extractResult.extraction_id;
+            const totalPages = extractResult.total_pages || 1;
+            const creditsNeeded = extractResult.credits_needed || 1;
+            
+            // Afficher les informations sur le document et le coût
+            showNotification(`Document analysé: ${totalPages} pages. Coût: ${creditsNeeded} crédits.`, 'info');
+            
+            // Mettre à jour l'affichage des pages dans l'interface
+            document.getElementById('pageInfo').textContent = `Document ${totalPages} pages`;
+            document.getElementById('progressTitle').textContent = `Préparation extraction - ${totalPages} pages détectées`;
+            
+            // Message humoristique initial
+            const progressDetailsText = document.getElementById('progressDetailsText');
+            if (progressDetailsText) {
+                progressDetailsText.textContent = "Patientez… ou allez chercher un café, ça ira plus vite ☕";
+            }
+            
+            // Réinitialiser les étapes de traitement
+            document.querySelectorAll('.processing-step').forEach(step => {
+                step.classList.remove('active', 'completed');
+            });
+            document.getElementById('stepReading').classList.add('active');
+            
+            // Étape 3: Démarrer le traitement direct avec suivi
+            const processResponse = fetch('/process_extraction', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    extraction_id: extractionId,
+                    file_data: fileBase64,
+                    filename: currentFile.name
+                })
+            });
+            
+            // Étape 4: Suivre le progrès en temps réel
+            const progressInterval = setInterval(async () => {
+                try {
+                    const progressResponse = await fetch(`/extract_progress/${extractionId}`);
+                    const progressData = await progressResponse.json();
+                    
+                    if (progressData.success) {
+                        updateExtractionProgress(progressData.data);
+                        
+                        if (progressData.data.status === 'completed') {
+                            clearInterval(progressInterval);
+                            stopFunnyMessageRotation();
+                            
+                            // Message final de succès
+                            const progressDetailsText = document.getElementById('progressDetailsText');
+                            if (progressDetailsText) {
+                                progressDetailsText.textContent = "🎉 Extraction terminée ! Redirection vers la prévisualisation...";
+                            }
+                            
+                            setTimeout(() => {
+                                extractedData = progressData.data.data;
+                                updateProcessStep(2, 'completed');
+                                updateProcessStep(3, 'active');
+                                
+                                // Mettre à jour les crédits affichés
+                                updateCreditsDisplay();
+                                
+                                showNotification('Extraction réussie ! Redirection en cours...', 'success');
+                                
+                                // Redirection automatique vers la page de prévisualisation
+                                setTimeout(() => {
+                                    window.location.href = '/preview';
+                                }, 1000);
+                            }, 1500);
+                        } else if (progressData.data.status === 'error') {
+                            clearInterval(progressInterval);
+                            stopFunnyMessageRotation();
+                            throw new Error(progressData.data.message);
+                        }
+                    }
+                } catch (error) {
+                    clearInterval(progressInterval);
+                    throw error;
+                }
+            }, 1000);
+            
+            // Attendre la fin du traitement
+            await processResponse;
+
+        } catch (error) {
+            stopFunnyMessageRotation();
+            showNotification(`Erreur de traitement: ${error.message}`, 'error');
+            resetInterface();
+        }
+    }
+    
+    function convertFileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+                const base64 = reader.result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = error => reject(error);
+        });
+    }
+    
+    // Messages humoristiques pour l'attente
+    const funnyMessages = [
+        "Patientez… ou allez chercher un café, ça ira plus vite",
+        "Vous pensiez que c'était instantané ? Hahaha, non.",
+        "On aurait dû prendre la fibre…",
+        "On n'est pas lents, on est méticuleux !",
+        "Chargement… promis, on ne fait pas de sieste 💤"
+    ];
+
+    let messageInterval;
+    let currentMessageIndex = 0;
+
+    function updateExtractionProgress(progressData) {
+        console.log('Mise à jour progress:', progressData); // Debug
+        
+        // Mettre à jour la barre de progression avec animation fluide
+        const progressBar = document.getElementById('progressBar');
+        if (progressBar && progressData.progress !== undefined) {
+            // Force la mise à jour même si la valeur est identique
+            progressBar.style.width = '0%';
+            setTimeout(() => {
+                progressBar.style.width = progressData.progress + '%';
+            }, 10);
+            console.log('Barre mise à jour:', progressData.progress + '%'); // Debug
+        }
+        
+        // Mettre à jour le pourcentage
+        const progressPercent = document.getElementById('progressPercent');
+        if (progressPercent && progressData.progress !== undefined) {
+            progressPercent.textContent = progressData.progress + '%';
+        }
+        
+        // Mettre à jour le titre et les informations de page avec style amélioré
+        const progressTitle = document.getElementById('progressTitle');
+        const pageInfo = document.getElementById('pageInfo');
+        
+        if (progressData.current_page && progressData.total_pages) {
+            if (progressTitle) progressTitle.textContent = `Extraction en cours - ${progressData.current_page}/${progressData.total_pages} pages`;
+            if (pageInfo) pageInfo.textContent = `Page ${progressData.current_page}/${progressData.total_pages}`;
+            console.log('Pages mises à jour:', progressData.current_page, '/', progressData.total_pages); // Debug
+        } else if (progressData.message) {
+            if (progressTitle) progressTitle.textContent = progressData.message;
+            if (pageInfo && progressData.total_pages) {
+                pageInfo.textContent = `Document ${progressData.total_pages} pages`;
+            } else if (pageInfo) {
+                pageInfo.textContent = 'Traitement en cours...';
+            }
+        }
+        
+        // Afficher des messages humoristiques pendant l'attente
+        updateFunnyMessage(progressData);
+        
+        // Gérer les étapes de traitement
+        updateProcessingSteps(progressData);
+    }
+
+    function updateFunnyMessage(progressData) {
+        const progressDetailsText = document.getElementById('progressDetailsText');
+        if (!progressDetailsText) return;
+
+        // Si on a des détails techniques spécifiques, les afficher
+        if (progressData.step_details && !progressData.step_details.includes('IA FactoSheet')) {
+            progressDetailsText.textContent = progressData.step_details;
+            return;
+        }
+
+        // Sinon, afficher des messages humoristiques
+        const progress = progressData.progress || 0;
+        
+        // Messages spécifiques selon la phase - rotation des messages fournis
+        const messageIndex = Math.floor(progress / 20) % funnyMessages.length;
+        progressDetailsText.textContent = funnyMessages[messageIndex];
+    }
+
+    function startFunnyMessageRotation() {
+        // Changer le message toutes les minutes pour éviter l'effet trop rapide
+        if (messageInterval) clearInterval(messageInterval);
+        
+        messageInterval = setInterval(() => {
+            const progressDetailsText = document.getElementById('progressDetailsText');
+            if (progressDetailsText) {
+                currentMessageIndex = (currentMessageIndex + 1) % funnyMessages.length;
+                progressDetailsText.textContent = funnyMessages[currentMessageIndex];
+            }
+        }, 60000); // Change toutes les minutes (60 secondes)
+    }
+
+    function stopFunnyMessageRotation() {
+        if (messageInterval) {
+            clearInterval(messageInterval);
+            messageInterval = null;
+        }
+    }
+    
+    function updateProcessingSteps(progressData) {
+        // Déterminer quelle étape est active basée sur le progrès et la phase
+        const progress = progressData.progress || 0;
+        const phase = progressData.extraction_phase || 'reading';
+        const stepDetails = progressData.step_details || '';
+        
+        // Réinitialiser toutes les étapes
+        document.querySelectorAll('.processing-step').forEach(step => {
+            step.classList.remove('active', 'completed');
+        });
+        
+        // Activer les étapes selon la phase et le progrès
+        if (phase === 'conversion' || stepDetails.includes('Conversion')) {
+            // Phase de conversion PDF -> images
+            document.getElementById('stepReading').classList.add('active');
+        } else if (phase === 'extraction' || stepDetails.includes('Analyse') || stepDetails.includes('Extraction')) {
+            // Phase d'extraction IA
+            document.getElementById('stepReading').classList.add('completed');
+            document.getElementById('stepExtracting').classList.add('active');
+        } else if (progress >= 90 && progress < 98) {
+            // Classification douanière
+            document.getElementById('stepReading').classList.add('completed');
+            document.getElementById('stepExtracting').classList.add('completed');
+            document.getElementById('stepClassifying').classList.add('active');
+        } else if (progress >= 98) {
+            // Finalisation
+            document.getElementById('stepReading').classList.add('completed');
+            document.getElementById('stepExtracting').classList.add('completed');
+            document.getElementById('stepClassifying').classList.add('completed');
+            document.getElementById('stepFinalizing').classList.add('active');
+        } else if (progress >= 0 && progress < 30) {
+            // Étape initiale de lecture
+            document.getElementById('stepReading').classList.add('active');
+        }
+        
+        // Si traitement terminé, toutes les étapes sont complétées
+        if (progressData.status === 'completed') {
+            document.querySelectorAll('.processing-step').forEach(step => {
+                step.classList.remove('active');
+                step.classList.add('completed');
+            });
+        }
+    }
+
+    function animateProgress() {
+        const progressFill = document.getElementById('progressFill');
+        let progress = 0;
+        
+        const interval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+            }
+            progressFill.style.width = progress + '%';
+        }, 200);
+    }
+
+    function displayResults(data) {
+        document.getElementById('processingZone').style.display = 'none';
+        
+        // Sauvegarder les données pour l'export
+        extractedData = data;
+        
+        let html = '<div class="results-table-container">';
+        
+        if (data.fournisseur) {
+            html += `
+                <h4 style="margin-bottom: 1rem; color: var(--primary-color);">Informations Fournisseur</h4>
+                <table class="results-table">
+                    <tr><td><strong>Nom</strong></td><td>${data.fournisseur.nom || 'N/A'}</td></tr>
+                    <tr><td><strong>Adresse</strong></td><td>${data.fournisseur.adresse || 'N/A'}</td></tr>
+                    <tr><td><strong>Email</strong></td><td>${data.fournisseur.email || 'N/A'}</td></tr>
+                </table>
+            `;
+        }
+        
+        if (data.produits && data.produits.length > 0) {
+            html += `
+                <h4 style="margin: 2rem 0 1rem; color: var(--primary-color);">Produits Extraits</h4>
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Quantité</th>
+                            <th>Prix unitaire</th>
+                            <th>Total</th>
+                            <th>Code SH</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.produits.forEach(produit => {
+                html += `
+                    <tr>
+                        <td>${produit.description || 'N/A'}</td>
+                        <td>${produit.quantite || 'N/A'}</td>
+                        <td>${produit.prix_unitaire || 'N/A'}</td>
+                        <td>${produit.total || 'N/A'}</td>
+                        <td>${produit.code_sh || 'À classifier'}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+        }
+        
+        html += '</div>';
+        
+        document.getElementById('extractedData').innerHTML = html;
+        document.getElementById('resultsContainer').classList.add('show');
+    }
+
+    async function exportData() {
+        if (!extractedData) {
+            showNotification('Aucune donnée à exporter', 'error');
+            return;
+        }
+        
+        const format = document.getElementById('exportFormat').value;
+        
+        try {
+            let url = '/export/excel';
+            let filename = 'extraction_facture.xlsx';
+            
+            switch(format) {
+                case 'csv':
+                    url = '/export/csv';
+                    filename = 'extraction_facture.csv';
+                    break;
+                case 'douanier':
+                    url = '/export/excel?template=douanier';
+                    filename = 'declaration_douaniere.xlsx';
+                    break;
+                case 'comptabilite':
+                    url = '/export/excel?template=comptabilite';
+                    filename = 'export_comptable.xlsx';
+                    break;
+            }
+            
+            // Télécharger le fichier
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            
+            showNotification(`Export ${format.toUpperCase()} démarré`, 'success');
+        } catch (error) {
+            showNotification('Erreur lors de l\'export', 'error');
+        }
+    }
+
+    function previewData() {
+        if (!extractedData) {
+            showNotification('Aucune donnée à prévisualiser', 'error');
+            return;
+        }
+        
+        // Rediriger vers la page de prévisualisation
+        window.location.href = '/preview';
+    }
+
+    async function exportToCSV() {
+        if (!extractedData) {
+            showNotification('Aucune donnée à exporter', 'error');
+            return;
+        }
+        
+        try {
+            const link = document.createElement('a');
+            link.href = '/export/csv';
+            link.download = 'extraction_facture.csv';
+            link.click();
+            
+            showNotification('Export CSV démarré', 'success');
+        } catch (error) {
+            showNotification('Erreur lors de l\'export CSV', 'error');
+        }
+    }
+
+    async function exportToExcel() {
+        if (!extractedData) {
+            showNotification('Aucune donnée à exporter', 'error');
+            return;
+        }
+        
+        try {
+            const link = document.createElement('a');
+            link.href = '/export/excel';
+            link.download = 'extraction_facture.xlsx';
+            link.click();
+            
+            showNotification('Export Excel démarré', 'success');
+        } catch (error) {
+            showNotification('Erreur lors de l\'export Excel', 'error');
+        }
+    }
+
+    function startNewExtraction() {
+        resetInterface();
+        currentFile = null;
+        extractedData = null;
+        document.getElementById('fileInput').value = '';
+    }
+
+    function resetInterface() {
+        document.getElementById('uploadZone').style.display = 'block';
+        document.getElementById('filePreview').classList.remove('show');
+        document.getElementById('processingZone').style.display = 'none';
+        document.getElementById('resultsContainer').classList.remove('show');
+        
+        updateProcessStep(1, 'active');
+        updateProcessStep(2, 'pending');
+        updateProcessStep(3, 'pending');
+    }
+
+    function updateProcessStep(step, status) {
+        const stepElement = document.getElementById(`step${step}`);
+        stepElement.className = `process-step ${status}`;
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Fonction pour mettre à jour l'affichage des crédits
+    async function updateCreditsDisplay() {
+        try {
+            const response = await fetch('/api/check_credits');
+            const data = await response.json();
+            
+            if (data.success) {
+                // Mettre à jour les statistiques affichées
+                const creditsDisponibles = document.querySelector('.stat-card:nth-child(1) .stat-number');
+                const creditsUtilises = document.querySelector('.stat-card:nth-child(2) .stat-number');
+                
+                if (creditsDisponibles) {
+                    creditsDisponibles.textContent = data.credits_available;
+                }
+                
+                if (creditsUtilises) {
+                    // Récupérer la valeur actuelle et l'incrémenter
+                    const currentUsed = parseInt(creditsUtilises.textContent) || 0;
+                    creditsUtilises.textContent = currentUsed + 1;
+                }
+                
+                // Afficher une notification informative sur la consommation
+                showNotification(`1 crédit consommé. Crédits restants: ${data.credits_available}`, 'info');
+            }
+        } catch (error) {
+            console.warn('Impossible de mettre à jour les crédits:', error);
+        }
+    }
+
+    // Fonction pour vérifier régulièrement les crédits lors du chargement de la page
+    async function checkInitialCredits() {
+        try {
+            const response = await fetch('/api/check_credits');
+            const data = await response.json();
+            
+            if (data.success && data.credits_available <= 5) {
+                showNotification(`Attention: il vous reste seulement ${data.credits_available} crédits`, 'warning');
+            }
+        } catch (error) {
+            console.warn('Impossible de vérifier les crédits initiaux:', error);
+        }
+    }
+
+    // Vérifier les crédits au chargement de la page
+    document.addEventListener('DOMContentLoaded', () => {
+        checkInitialCredits();
+    });
+</script>
+{% endblock %}

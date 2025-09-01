@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Redirection - FactoSheet</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+        }
+        .debug-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            padding: 3rem;
+            border-radius: 2rem;
+            max-width: 600px;
+        }
+        .btn {
+            background: white;
+            color: #4CAF50;
+            padding: 1rem 2rem;
+            margin: 1rem;
+            border-radius: 1rem;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,255,255,0.3);
+        }
+        .logs {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            border-radius: 1rem;
+            margin: 2rem 0;
+            font-family: monospace;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>🔧 Debug Navigation</h1>
+        <p>Tests de redirection vers le compte utilisateur</p>
+        
+        <div class="logs" id="debugLogs">
+            Initialisation des tests...
+        </div>
+        
+        <a href="/compte" class="btn">Route directe /compte</a>
+        <a href="/dashboard" class="btn">Retour Dashboard</a>
+        <button onclick="testRedirect()" class="btn">Test JS Redirect</button>
+        <button onclick="testSession()" class="btn">Test Session</button>
+    </div>
+
+    <script>
+        const logs = document.getElementById('debugLogs');
+        
+        function addLog(message) {
+            logs.innerHTML += '\n' + new Date().toLocaleTimeString() + ': ' + message;
+            logs.scrollTop = logs.scrollHeight;
+        }
+        
+        function testRedirect() {
+            addLog('🔄 Test redirection JavaScript...');
+            setTimeout(() => {
+                addLog('Tentative redirection vers /compte');
+                window.location.href = '/compte';
+            }, 1000);
+        }
+        
+        async function testSession() {
+            addLog('🔍 Test statut session...');
+            try {
+                const response = await fetch('/api/check_credits');
+                const data = await response.json();
+                addLog('Session status: ' + JSON.stringify(data));
+            } catch (error) {
+                addLog('Erreur session: ' + error.message);
+            }
+        }
+        
+        // Test automatique au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('✅ Page debug chargée');
+            addLog('URL actuelle: ' + window.location.href);
+            addLog('Cookies: ' + (document.cookie || 'aucun'));
+        });
+    </script>
+</body>
+</html>

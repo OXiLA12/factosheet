@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Compte - {{ user_data.prenom }} {{ user_data.nom }} - FactoSheet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .nav-link {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-link:hover {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2E7D32;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .account-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 3rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            {% if user_data.photo_url %}
+            background: url('{{ user_data.photo_url }}') center/cover;
+            {% else %}
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            {% endif %}
+        }
+        
+        .profile-name {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2E7D32;
+            margin-bottom: 0.5rem;
+        }
+        
+        .profile-email {
+            color: #666;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .profile-plan {
+            display: inline-block;
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            text-transform: capitalize;
+            margin-bottom: 1rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            text-align: center;
+            border: 2px solid rgba(76, 175, 80, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #2E7D32;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .firebase-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 3rem;
+            margin: 2rem 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        
+        .firebase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .firebase-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2E7D32;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .firebase-status {
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .firebase-status.connected {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2E7D32;
+            border: 2px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .firebase-status.disconnected {
+            background: rgba(244, 67, 54, 0.1);
+            color: #d32f2f;
+            border: 2px solid rgba(244, 67, 54, 0.3);
+        }
+        
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            background: rgba(76, 175, 80, 0.05);
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .history-info {
+            flex: 1;
+        }
+        
+        .history-filename {
+            font-weight: 600;
+            color: #2E7D32;
+            margin-bottom: 0.5rem;
+        }
+        
+        .history-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .history-stats {
+            text-align: right;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .empty-history {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2E7D32;
+            border: 2px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .account-header, .firebase-section {
+                padding: 2rem;
+            }
+            
+            .profile-name {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="/" class="logo">FactoSheet</a>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Accueil</a>
+            <a href="/dashboard" class="nav-link">Extraction</a>
+            <a href="/pricing" class="nav-link">Tarifs</a>
+            <a href="/logout" class="nav-link" style="color: #f44336;">Déconnexion</a>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- En-tête de profil personnalisé -->
+        <div class="account-header">
+            <div class="profile-avatar">
+                {% if not user_data.photo_url %}
+                    {{ user_data.prenom[0]|upper }}{{ user_data.nom[0]|upper }}
+                {% endif %}
+            </div>
+            <div class="profile-name">{{ user_data.prenom }} {{ user_data.nom }}</div>
+            <div class="profile-email">{{ user_data.email }}</div>
+            <div class="profile-plan">Plan {{ user_data.plan|title }}</div>
+            <p style="color: #666; margin-top: 1rem;">
+                Membre depuis votre première connexion • Données sécurisées par FactoSheet
+            </p>
+        </div>
+
+        <!-- Statistiques personnalisées -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">💎</div>
+                <div class="stat-number">{{ user_data.credits_disponibles|default(0) }}</div>
+                <div class="stat-label">Crédits Disponibles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-number">{{ user_data.credits_utilises|default(0) }}</div>
+                <div class="stat-label">Crédits Utilisés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📄</div>
+                <div class="stat-number">{{ extraction_history|length }}</div>
+                <div class="stat-label">Documents Traités</div>
+            </div>
+        </div>
+
+        <!-- Section Firebase personnalisée -->
+        <div class="firebase-section">
+            <div class="firebase-header">
+                <div class="firebase-title">
+                    🔥 Votre Historique Firebase
+                </div>
+                <div class="firebase-status {% if firebase_status.connected %}connected{% else %}disconnected{% endif %}" id="firebaseStatus">
+                    <span id="statusIndicator">
+                        {% if firebase_status.connected %}✅{% else %}❌{% endif %}
+                    </span>
+                    <span id="statusMessage">{{ firebase_status.message }}</span>
+                </div>
+            </div>
+
+            {% if extraction_history and extraction_history|length > 0 %}
+                <div class="history-list">
+                    {% for extraction in extraction_history %}
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="history-filename">{{ extraction.filename|default('Document PDF') }}</div>
+                            <div class="history-date">
+                                {{ extraction.timestamp.strftime('%d/%m/%Y à %H:%M') if extraction.timestamp else 'Date inconnue' }}
+                            </div>
+                        </div>
+                        <div class="history-stats">
+                            <div>{{ extraction.products_count|default(0) }} produits</div>
+                            <div>{{ "%.2f"|format(extraction.total_amount|default(0)) }}€</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-history">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">📋</div>
+                    <h3 style="color: #2E7D32; margin-bottom: 1rem;">Aucune extraction pour le moment</h3>
+                    <p>Vos documents traités apparaîtront ici automatiquement</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Actions personnalisées -->
+        <div class="actions">
+            <a href="/dashboard" class="btn btn-primary">
+                📄 Traiter un Document
+            </a>
+            <a href="/pricing" class="btn btn-secondary">
+                💎 Gérer mon Abonnement
+            </a>
+            <button onclick="refreshHistory()" class="btn btn-secondary">
+                🔄 Actualiser l'Historique
+            </button>
+        </div>
+    </div>
+
+    <script>
+        async function refreshHistory() {
+            const statusEl = document.getElementById('firebaseStatus');
+            const indicator = document.getElementById('statusIndicator');
+            const message = document.getElementById('statusMessage');
+            
+            indicator.textContent = '⏳';
+            message.textContent = 'Actualisation en cours...';
+            
+            try {
+                const response = await fetch('/api/firebase-status');
+                const data = await response.json();
+                
+                if (data.connected) {
+                    statusEl.className = 'firebase-status connected';
+                    indicator.textContent = '✅';
+                    message.textContent = `Connecté - ${data.message}`;
+                    
+                    // Recharger la page pour afficher les nouvelles données
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    statusEl.className = 'firebase-status disconnected';
+                    indicator.textContent = '❌';
+                    message.textContent = `Déconnecté - ${data.message}`;
+                }
+            } catch (error) {
+                statusEl.className = 'firebase-status disconnected';
+                indicator.textContent = '⚠️';
+                message.textContent = 'Erreur de vérification';
+                console.error('Erreur refresh Firebase:', error);
+            }
+        }
+
+        // Auto-refresh du statut Firebase toutes les 30 secondes
+        setInterval(refreshHistory, 30000);
+    </script>
+</body>
+</html>

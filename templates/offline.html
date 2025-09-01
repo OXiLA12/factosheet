@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mode hors ligne - FactoSheet</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #81C784;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --background: #f8fffe;
+            --surface: rgba(255, 255, 255, 0.95);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+        }
+
+        .offline-container {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            max-width: 500px;
+            margin: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .offline-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            background: linear-gradient(135deg, #FF9800, #FFB74D);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: white;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .offline-message {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .offline-features {
+            background: rgba(76, 175, 80, 0.05);
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .offline-features h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature-list li::before {
+            content: "✓";
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark, #2E7D32);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .connection-status {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 152, 0, 0.1);
+            border: 1px solid rgba(255, 152, 0, 0.3);
+            border-radius: 10px;
+            color: #F57C00;
+            font-weight: 500;
+        }
+
+        .retry-info {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .offline-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .offline-icon {
+                width: 100px;
+                height: 100px;
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📵</div>
+        
+        <h1>Mode hors ligne</h1>
+        
+        <div class="offline-message">
+            Vous êtes actuellement hors ligne, mais FactoSheet continue de fonctionner !
+            Vos données seront synchronisées dès que la connexion sera rétablie.
+        </div>
+
+        <div class="offline-features">
+            <h3>Fonctionnalités disponibles hors ligne :</h3>
+            <ul class="feature-list">
+                <li>Scanner des factures avec la caméra</li>
+                <li>Consulter l'historique des extractions</li>
+                <li>Naviguer dans votre compte</li>
+                <li>Accéder aux données en cache</li>
+                <li>Synchronisation automatique au retour en ligne</li>
+            </ul>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;">
+            <button onclick="window.history.back()" class="btn">
+                Retour
+            </button>
+            <button onclick="location.reload()" class="btn btn-secondary">
+                Réessayer
+            </button>
+        </div>
+
+        <div class="connection-status" id="connectionStatus">
+            Vérification de la connexion en cours...
+        </div>
+
+        <div class="retry-info">
+            La page se rechargera automatiquement lorsque la connexion sera rétablie.
+        </div>
+    </div>
+
+    <script>
+        // Vérification périodique de la connexion
+        let connectionCheck = setInterval(() => {
+            const status = document.getElementById('connectionStatus');
+            
+            if (navigator.onLine) {
+                status.innerHTML = '🟢 Connexion rétablie ! Redirection...';
+                status.style.background = 'rgba(76, 175, 80, 0.1)';
+                status.style.borderColor = 'rgba(76, 175, 80, 0.3)';
+                status.style.color = '#4CAF50';
+                
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 2000);
+                
+                clearInterval(connectionCheck);
+            } else {
+                status.innerHTML = '🔴 Toujours hors ligne - Tentative de reconnexion...';
+            }
+        }, 3000);
+
+        // Écouter les changements de statut réseau
+        window.addEventListener('online', () => {
+            const status = document.getElementById('connectionStatus');
+            status.innerHTML = '🟢 Connexion rétablie ! Redirection...';
+            status.style.background = 'rgba(76, 175, 80, 0.1)';
+            status.style.borderColor = 'rgba(76, 175, 80, 0.3)';
+            status.style.color = '#4CAF50';
+            
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 2000);
+        });
+
+        window.addEventListener('offline', () => {
+            const status = document.getElementById('connectionStatus');
+            status.innerHTML = '🔴 Connexion perdue';
+        });
+    </script>
+</body>
+</html>

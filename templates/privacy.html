@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Politique de Confidentialité - FactoSheet{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin: 0 auto; padding: 2rem 1rem;">
+    
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            Politique de Confidentialité
+        </h1>
+        <p style="font-size: 1.1rem; color: var(--text-secondary);">
+            Votre vie privée et la sécurité de vos données sont nos priorités absolues
+        </p>
+    </div>
+
+    <!-- Section Sécurité des données -->
+    <div class="card mb-4">
+        <div style="background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.2); border-radius: 12px; padding: 24px; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <svg width="24" height="24" fill="#4CAF50" viewBox="0 0 24 24">
+                    <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11.5C15.4,11.9 16,12.4 16,13V16C16,17.1 15.1,18 14,18H10C8.9,18 8,17.1 8,16V13C8,12.4 8.4,11.9 9,11.5V10C9,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.2,9.2 10.2,10V11.5H13.8V10C13.8,9.2 12.8,8.2 12,8.2Z"/>
+                </svg>
+                <h2 style="color: #4CAF50; margin: 0; font-weight: 600;">🔒 Engagement de Sécurité</h2>
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <span style="color: #4CAF50;">✓</span>
+                    <strong>Aucun stockage permanent</strong> : Vos documents sont supprimés automatiquement après traitement
+                </li>
+                <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <span style="color: #4CAF50;">✓</span>
+                    <strong>Traitement confidentiel</strong> : Vos données ne sont jamais partagées avec des tiers
+                </li>
+                <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <span style="color: #4CAF50;">✓</span>
+                    <strong>Connexion sécurisée</strong> : Toutes les communications sont chiffrées HTTPS
+                </li>
+                <li style="display: flex; align-items: center; gap: 8px;">
+                    <span style="color: #4CAF50;">✓</span>
+                    <strong>Conformité RGPD</strong> : Respect strict de la réglementation européenne
+                </li>
+            </ul>
+        </div>
+
+        <h3 style="color: var(--primary-color); margin-bottom: 1rem;">1. Collecte des Données</h3>
+        <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem;">
+            Nous collectons uniquement les informations nécessaires au fonctionnement du service :
+            nom, prénom, adresse email et les fichiers PDF que vous choisissez de traiter.
+            Aucune donnée personnelle n'est collectée sans votre consentement explicite.
+        </p>
+
+        <h3 style="color: var(--primary-color); margin-bottom: 1rem;">2. Utilisation des Données</h3>
+        <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem;">
+            Vos données personnelles servent exclusivement à :
+        </p>
+        <ul style="color: var(--text-secondary); margin-bottom: 2rem;">
+            <li>Vous identifier et gérer votre compte</li>
+            <li>Traiter vos factures PDF avec notre IA FactoSheet</li>
+            <li>Vous fournir un support technique</li>
+            <li>Améliorer notre service (données anonymisées uniquement)</li>
+        </ul>
+
+        <h3 style="color: var(--primary-color); margin-bottom: 1rem;">3. Protection des Documents</h3>
+        <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem;">
+            <strong>Garantie zéro stockage :</strong> Vos factures PDF sont traitées en temps réel et 
+            supprimées immédiatement après extraction. Nous ne conservons aucune copie de vos documents 
+            sur nos serveurs. Le traitement s'effectue en mémoire volatile uniquement.
+        </p>
+
+        <h3 style="color: var(--primary-color); margin-bottom: 1rem;">4. Partage des Données</h3>
+        <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem;">
+            Nous ne vendons, ne louons et ne partageons jamais vos données personnelles avec des tiers.
+            L'accès est strictement limité à notre équipe technique pour la maintenance du service.
+        </p>
+
+        <h3 style="color: var(--primary-color); margin-bottom: 1rem;">5. Vos Droits</h3>
+        <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem;">
+            Conformément au RGPD, vous disposez des droits suivants :
+        </p>
+        <ul style="color: var(--text-secondary); margin-bottom: 2rem;">
+            <li><strong>Droit d'accès :</strong> Consulter les données que nous détenons sur vous</li>
+            <li><strong>Droit de rectification :</strong> Corriger les informations incorrectes</li>
+            <li><strong>Droit à l'effacement :</strong> Supprimer votre compte et vos données</li>
+            <li><strong>Droit d'opposition :</strong> Refuser certains traitements</li>
+            <li><strong>Droit à la portabilité :</strong> Récupérer vos données dans un format standard</li>
+        </ul>
+
+        <h3 style="color: var(--primary-color); margin-bottom: 1rem;">6. Cookies et Traceurs</h3>
+        <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem;">
+            Nous utilisons uniquement des cookies essentiels au fonctionnement du site (session utilisateur).
+            Aucun cookie de tracking ou publicitaire n'est utilisé.
+        </p>
+
+        <h3 style="color: var(--primary-color); margin-bottom: 1rem;">7. Contact</h3>
+        <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem;">
+            Pour toute question concernant cette politique de confidentialité ou pour exercer vos droits,
+            contactez-nous à : <strong>privacy@factosheet.com</strong>
+        </p>
+
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+            <p style="margin: 0; color: var(--text-secondary); font-style: italic;">
+                <strong>Dernière mise à jour :</strong> Août 2025<br>
+                Cette politique peut être mise à jour pour refléter les évolutions de notre service.
+                Nous vous informerons de tout changement significatif.
+            </p>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            Retour à l'accueil
+        </a>
+    </div>
+</div>
+{% endblock %}

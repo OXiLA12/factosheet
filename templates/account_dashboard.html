@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Compte - {{ user_data.prenom }} {{ user_data.nom }} - FactoSheet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-gradient: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            --bg-primary: rgba(255, 255, 255, 0.95);
+            --bg-secondary: rgba(255, 255, 255, 0.05);
+            --text-primary: #333;
+            --text-secondary: #666;
+            --text-muted: #999;
+            --border-color: rgba(76, 175, 80, 0.2);
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            --bg-primary: rgba(40, 40, 40, 0.95);
+            --bg-secondary: rgba(255, 255, 255, 0.05);
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --text-muted: #888;
+            --border-color: rgba(76, 175, 80, 0.3);
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        
+        .header {
+            background: var(--bg-primary);
+            backdrop-filter: blur(20px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-link:hover {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2E7D32;
+        }
+
+        .main-container {
+            display: flex;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            gap: 2rem;
+            min-height: calc(100vh - 120px);
+        }
+
+        /* Sidebar verticale */
+        .account-sidebar {
+            width: 280px;
+            background: var(--bg-primary);
+            border-radius: 15px;
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .sidebar-profile {
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4CAF50, #81C784);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0 auto 1rem;
+            border: 3px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .profile-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2E7D32;
+            margin-bottom: 0.3rem;
+        }
+
+        .profile-email {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-plan {
+            display: inline-block;
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item button {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 1rem;
+            text-align: left;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .nav-item button:hover {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2E7D32;
+        }
+
+        .nav-item button.active {
+            background: rgba(76, 175, 80, 0.15);
+            color: #2E7D32;
+            font-weight: 600;
+            border-left: 3px solid #4CAF50;
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Contenu principal */
+        .account-content {
+            flex: 1;
+            background: var(--bg-primary);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #2E7D32;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        /* Cards des sections */
+        .info-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2E7D32;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(76, 175, 80, 0.05);
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2E7D32;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 25px;
+            background: var(--border-color);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: #4CAF50;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 21px;
+            height: 21px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(25px);
+        }
+
+        /* Styles pour les aperçus de thème */
+        .theme-preview {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .theme-preview:hover {
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .theme-preview.active {
+            border-color: #4CAF50;
+            border-width: 3px;
+        }
+
+        /* Toggle switch pour le thème */
+        .toggle-switch-thumb {
+            position: absolute;
+            width: 21px;
+            height: 21px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.active .toggle-switch-thumb {
+            transform: translateX(25px);
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+
+        .billing-history {
+            overflow-x: auto;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .history-table th {
+            background: rgba(76, 175, 80, 0.1);
+            font-weight: 600;
+            color: #2E7D32;
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-success {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2E7D32;
+        }
+
+        .status-pending {
+            background: rgba(255, 193, 7, 0.1);
+            color: #f57f17;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                margin: 1rem;
+                gap: 1rem;
+            }
+
+            .account-sidebar {
+                width: 100%;
+                position: static;
+            }
+
+            .sidebar-nav {
+                display: flex;
+                overflow-x: auto;
+                gap: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+
+            .nav-item {
+                margin-bottom: 0;
+                min-width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <a href="{{ url_for('index') }}" class="logo">FactoSheet</a>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+            <a href="{{ url_for('logout') }}" class="nav-link">Déconnexion</a>
+        </div>
+    </div>
+
+    <!-- Container principal -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="account-sidebar">
+            <div class="sidebar-profile">
+                <div class="profile-avatar">
+                    {% if user_data.get('photo_url') %}
+                        <img src="{{ user_data.photo_url }}" alt="Photo de profil" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                    {% else %}
+                        {{ user_data.get('initials', user_data.prenom[0]|upper + user_data.nom[0]|upper if user_data.prenom and user_data.nom else 'U') }}
+                    {% endif %}
+                </div>
+                <div class="profile-name">{{ user_data.prenom }} {{ user_data.nom }}</div>
+                <div class="profile-email">{{ user_data.email }}</div>
+                <div class="profile-plan">Plan {{ user_data.plan|title }}</div>
+            </div>
+
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <button onclick="showSection('overview')" class="active" id="nav-overview">
+                        <span class="nav-icon">📊</span>
+                        Vue d'ensemble
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button onclick="showSection('profile')" id="nav-profile">
+                        <span class="nav-icon">👤</span>
+                        Profil
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button onclick="showSection('security')" id="nav-security">
+                        <span class="nav-icon">🔒</span>
+                        Mot de passe & Sécurité
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button onclick="showSection('billing')" id="nav-billing">
+                        <span class="nav-icon">💳</span>
+                        Facturation & Plans
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button onclick="showSection('usage')" id="nav-usage">
+                        <span class="nav-icon">📈</span>
+                        Utilisation & Crédits
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button onclick="showSection('preferences')" id="nav-preferences">
+                        <span class="nav-icon">⚙️</span>
+                        Préférences
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button onclick="showSection('notifications')" id="nav-notifications">
+                        <span class="nav-icon">🔔</span>
+                        Notifications
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button onclick="showSection('api')" id="nav-api">
+                        <span class="nav-icon">🔗</span>
+                        API & Intégrations
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button onclick="showSection('appearance')" id="nav-appearance">
+                        <span class="nav-icon">🎨</span>
+                        Apparence
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="account-content">
+            <!-- Vue d'ensemble -->
+            <div id="section-overview" class="content-section active">
+                <h1 class="section-title">Vue d'ensemble</h1>
+                <p class="section-subtitle">Résumé de votre activité et informations importantes</p>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ user_data.credits_disponibles|default(0) }}</div>
+                        <div class="stat-label">Crédits disponibles</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ user_data.credits_utilises|default(0) }}</div>
+                        <div class="stat-label">Crédits utilisés</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ user_data.factures_utilisees|default(0) }}</div>
+                        <div class="stat-label">Factures traitées</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ user_data.plan|title }}</div>
+                        <div class="stat-label">Plan actuel</div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-title">🎯 Actions rapides</div>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <a href="{{ url_for('dashboard') }}" class="btn">Traiter une facture</a>
+                        <button onclick="showSection('billing')" class="btn btn-secondary">Gérer mon plan</button>
+                        <button onclick="showSection('usage')" class="btn btn-secondary">Voir l'utilisation</button>
+                    </div>
+                </div>
+
+                {% if user_data.plan == 'decouverte' %}
+                <div class="info-card" style="border-color: #FF9800; background: rgba(255, 152, 0, 0.05);">
+                    <div class="card-title" style="color: #F57C00;">⚡ Débloquez plus de fonctionnalités</div>
+                    <p style="margin-bottom: 1rem;">Votre plan Découverte vous limite à {{ user_data.credits_disponibles }} crédits. Passez au plan Pro pour traiter plus de factures !</p>
+                    <a href="{{ url_for('pricing') }}" class="btn">Voir les plans</a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Profil -->
+            <div id="section-profile" class="content-section">
+                <h1 class="section-title">Informations du profil</h1>
+                <p class="section-subtitle">Gérez vos informations personnelles</p>
+
+                <div class="info-card">
+                    <div class="card-title">👤 Informations personnelles</div>
+                    <form id="profileForm">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Prénom</label>
+                                <input type="text" class="form-input" id="prenomEdit" value="{{ user_data.prenom }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nom</label>
+                                <input type="text" class="form-input" id="nomEdit" value="{{ user_data.nom }}" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" value="{{ user_data.email }}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nom d'utilisateur</label>
+                            <input type="text" class="form-input" id="usernameEdit" value="{{ user_data.get('username', user_data.email.split('@')[0]) }}">
+                        </div>
+                        <button type="submit" class="btn">Sauvegarder les modifications</button>
+                    </form>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-title">📸 Photo de profil</div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #4CAF50, #81C784); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold;">
+                            {% if user_data.get('photo_url') %}
+                                <img src="{{ user_data.photo_url }}" alt="Photo de profil" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                            {% else %}
+                                {{ user_data.get('initials', 'U') }}
+                            {% endif %}
+                        </div>
+                        <div>
+                            <button class="btn btn-secondary" onclick="changeProfilePhoto()">Changer la photo</button>
+                            <p style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">JPG, PNG ou WEBP. Max 2MB.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sécurité -->
+            <div id="section-security" class="content-section">
+                <h1 class="section-title">Mot de passe & Sécurité</h1>
+                <p class="section-subtitle">Protégez votre compte avec des paramètres de sécurité robustes</p>
+
+                <div class="info-card">
+                    <div class="card-title">🔐 Changer le mot de passe</div>
+                    <form id="passwordForm">
+                        <div class="form-group">
+                            <label class="form-label">Mot de passe actuel</label>
+                            <input type="password" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nouveau mot de passe</label>
+                            <input type="password" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirmer le nouveau mot de passe</label>
+                            <input type="password" class="form-input" required>
+                        </div>
+                        <button type="submit" class="btn">Mettre à jour le mot de passe</button>
+                    </form>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-title">🛡️ Authentification à deux facteurs</div>
+                    <div class="setting-row">
+                        <div>
+                            <strong>Authentification 2FA</strong>
+                            <p style="font-size: 0.9rem; color: #666;">Ajoutez une couche de sécurité supplémentaire</p>
+                        </div>
+                        <div class="toggle-switch" onclick="toggle2FA()"></div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-title">📱 Sessions actives</div>
+                    <div style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+                        <div style="padding: 1rem; border-bottom: 1px solid #ddd; background: #f9f9f9;">
+                            <strong>Session actuelle</strong>
+                            <p style="font-size: 0.9rem; color: #666;">Chrome sur Windows • {{ "maintenant"|default("il y a quelques minutes") }}</p>
+                        </div>
+                        <div style="padding: 1rem; text-align: center;">
+                            <button class="btn btn-danger">Déconnecter toutes les autres sessions</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Facturation -->
+            <div id="section-billing" class="content-section">
+                <h1 class="section-title">Facturation & Plans</h1>
+                <p class="section-subtitle">Gérez votre abonnement et consultez votre historique</p>
+
+                <div class="info-card">
+                    <div class="card-title">💳 Plan actuel</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div>
+                            <h3 style="color: #2E7D32; margin-bottom: 0.5rem;">Plan {{ user_data.plan|title }}</h3>
+                            <p style="color: #666; margin-bottom: 0.3rem;">{{ user_data.credits_disponibles }} crédits disponibles</p>
+                            {% if user_data.get('plan_expires_at') %}
+                                <p style="color: #666; font-size: 0.9rem;">Expire le {{ user_data.plan_expires_at }}</p>
+                            {% endif %}
+                            {% if user_data.get('auto_renew', True) %}
+                                <span style="color: #4CAF50; font-size: 0.9rem; font-weight: 500;">🔄 Renouvellement automatique activé</span>
+                            {% else %}
+                                <span style="color: #FF9800; font-size: 0.9rem; font-weight: 500;">⚠️ Renouvellement annulé</span>
+                            {% endif %}
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <a href="{{ url_for('pricing') }}" class="btn">Changer de plan</a>
+                            {% if user_data.plan != 'decouverte' %}
+                                {% if user_data.get('auto_renew', True) %}
+                                    <button onclick="cancelSubscription()" class="btn btn-secondary">Annuler le renouvellement</button>
+                                {% else %}
+                                    <button onclick="reactivateSubscription()" class="btn">Réactiver le renouvellement</button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if not user_data.get('auto_renew', True) and user_data.plan != 'decouverte' %}
+                        <div style="background: rgba(255, 152, 0, 0.1); border: 1px solid #FF9800; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                            <strong style="color: #F57C00;">Renouvellement annulé</strong>
+                            <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
+                                Votre plan restera actif jusqu'au {{ user_data.get('plan_expires_at', 'fin de la période') }}. 
+                                Après cette date, vous basculerez automatiquement sur le plan Découverte.
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="info-card">
+                    <div class="card-title">📊 Utilisation du mois</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #2E7D32;">{{ user_data.credits_utilises|default(0) }}</div>
+                            <div style="font-size: 0.9rem; color: #666;">Crédits utilisés</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #2E7D32;">{{ user_data.factures_utilisees|default(0) }}</div>
+                            <div style="font-size: 0.9rem; color: #666;">Factures traitées</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-title">📄 Historique de facturation</div>
+                    <div class="billing-history">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Montant</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ "Aujourd'hui"|default("20/08/2025") }}</td>
+                                    <td>Crédits Plan {{ user_data.plan|title }}</td>
+                                    <td>Inclus</td>
+                                    <td><span class="status-badge status-success">Actif</span></td>
+                                    <td><button class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">Détails</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Utilisation -->
+            <div id="section-usage" class="content-section">
+                <h1 class="section-title">Utilisation & Crédits</h1>
+                <p class="section-subtitle">Suivez votre consommation et optimisez votre utilisation</p>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ user_data.credits_disponibles|default(0) }}</div>
+                        <div class="stat-label">Crédits restants</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ user_data.credits_utilises|default(0) }}</div>
+                        <div class="stat-label">Crédits utilisés ce mois</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ user_data.factures_utilisees|default(0) }}</div>
+                        <div class="stat-label">Factures traitées</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{% if user_data.credits_disponibles > 0 %}{{ (user_data.credits_utilises / (user_data.credits_utilises + user_data.credits_disponibles) * 100)|round|int }}{% else %}0{% endif %}%</div>
+                        <div class="stat-label">Utilisation</div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-title">📈 Conseils d'optimisation</div>
+                    <ul style="margin-left: 1.5rem; color: #666;">
+                        <li>Utilisez des PDF de qualité pour de meilleurs résultats</li>
+                        <li>Groupez vos extractions pour une meilleure efficacité</li>
+                        <li>Vérifiez les données extraites avant export pour éviter les retraitements</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Préférences -->
+            <div id="section-preferences" class="content-section">
+                <h1 class="section-title">Préférences</h1>
+                <p class="section-subtitle">Personnalisez votre expérience FactoSheet</p>
+
+                <div class="info-card">
+                    <div class="card-title">🌍 Langue et région</div>
+                    <div class="form-group">
+                        <label class="form-label">Langue</label>
+                        <select class="form-input">
+                            <option value="fr" selected>Français</option>
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Fuseau horaire</label>
+                        <select class="form-input">
+                            <option value="Europe/Paris" selected>Europe/Paris (GMT+1)</option>
+                            <option value="Europe/London">Europe/London (GMT+0)</option>
+                            <option value="America/New_York">America/New_York (GMT-5)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-title">⚙️ Préférences d'extraction</div>
+                    <div class="setting-row">
+                        <div>
+                            <strong>Classification automatique</strong>
+                            <p style="font-size: 0.9rem; color: #666;">Classifier automatiquement les codes SH</p>
+                        </div>
+                        <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+                    </div>
+                    <div class="setting-row">
+                        <div>
+                            <strong>Validation manuelle</strong>
+                            <p style="font-size: 0.9rem; color: #666;">Demander validation avant export</p>
+                        </div>
+                        <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div id="section-notifications" class="content-section">
+                <h1 class="section-title">Notifications</h1>
+                <p class="section-subtitle">Contrôlez quand et comment vous recevez les notifications</p>
+
+                <div class="info-card">
+                    <div class="card-title">📧 Notifications par email</div>
+                    <div class="setting-row">
+                        <div>
+                            <strong>Extraction terminée</strong>
+                            <p style="font-size: 0.9rem; color: #666;">Recevoir un email à la fin de chaque extraction</p>
+                        </div>
+                        <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+                    </div>
+                    <div class="setting-row">
+                        <div>
+                            <strong>Limite de crédits atteinte</strong>
+                            <p style="font-size: 0.9rem; color: #666;">Alerte quand 80% des crédits sont utilisés</p>
+                        </div>
+                        <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+                    </div>
+                    <div class="setting-row">
+                        <div>
+                            <strong>Nouveautés et mises à jour</strong>
+                            <p style="font-size: 0.9rem; color: #666;">Informations sur les nouvelles fonctionnalités</p>
+                        </div>
+                        <div class="toggle-switch" onclick="toggleSetting(this)"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API -->
+            <div id="section-api" class="content-section">
+                <h1 class="section-title">API & Intégrations</h1>
+                <p class="section-subtitle">Intégrez FactoSheet dans vos applications</p>
+
+                <div class="info-card">
+                    <div class="card-title">🔗 Clé API</div>
+                    <p style="margin-bottom: 1rem; color: var(--text-secondary);">Utilisez cette clé pour accéder à l'API FactoSheet depuis vos applications.</p>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <input type="text" class="form-input" value="sk-fact-" readonly style="flex: 1; font-family: monospace;">
+                        <button class="btn btn-secondary">Générer nouvelle clé</button>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-title">📚 Documentation</div>
+                    <p style="margin-bottom: 1rem; color: var(--text-secondary);">Découvrez comment intégrer FactoSheet dans vos workflows.</p>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-secondary">Voir la documentation</button>
+                        <button class="btn btn-secondary">Exemples de code</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Apparence -->
+            <div id="section-appearance" class="content-section">
+                <h1 class="section-title">Apparence</h1>
+                <p class="section-subtitle">Personnalisez l'apparence de votre interface</p>
+
+                <div class="info-card">
+                    <div class="card-title">🎨 Thème</div>
+                    <div class="setting-row">
+                        <div>
+                            <strong>Thème sombre</strong>
+                            <p style="font-size: 0.9rem; color: var(--text-secondary);">Basculer entre le thème clair et sombre</p>
+                        </div>
+                        <div class="toggle-switch" id="themeToggle" onclick="toggleTheme()">
+                            <div class="toggle-switch-thumb"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="card-title">💡 Aperçu du thème</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                        <div class="theme-preview theme-light" onclick="setTheme('light')">
+                            <div class="preview-header" style="background: #4CAF50; height: 20px; border-radius: 4px 4px 0 0;"></div>
+                            <div class="preview-content" style="background: white; padding: 1rem; border-radius: 0 0 4px 4px; color: #333;">
+                                <div style="width: 60%; height: 8px; background: #ddd; margin-bottom: 0.5rem; border-radius: 4px;"></div>
+                                <div style="width: 40%; height: 8px; background: #ddd; border-radius: 4px;"></div>
+                            </div>
+                            <div style="text-align: center; margin-top: 0.5rem; font-size: 0.9rem;">Thème Clair</div>
+                        </div>
+                        <div class="theme-preview theme-dark" onclick="setTheme('dark')">
+                            <div class="preview-header" style="background: #2d2d2d; height: 20px; border-radius: 4px 4px 0 0;"></div>
+                            <div class="preview-content" style="background: #1a1a1a; padding: 1rem; border-radius: 0 0 4px 4px; color: #e0e0e0;">
+                                <div style="width: 60%; height: 8px; background: #444; margin-bottom: 0.5rem; border-radius: 4px;"></div>
+                                <div style="width: 40%; height: 8px; background: #444; border-radius: 4px;"></div>
+                            </div>
+                            <div style="text-align: center; margin-top: 0.5rem; font-size: 0.9rem;">Thème Sombre</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionName) {
+            // Masquer toutes les sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Désactiver tous les boutons de navigation
+            document.querySelectorAll('.sidebar-nav button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Activer la section demandée
+            document.getElementById('section-' + sectionName).classList.add('active');
+            document.getElementById('nav-' + sectionName).classList.add('active');
+        }
+
+        function toggleSetting(element) {
+            element.classList.toggle('active');
+        }
+
+        function toggle2FA() {
+            const toggle = document.querySelector('.toggle-switch');
+            toggle.classList.toggle('active');
+            // Ici vous pouvez ajouter la logique pour activer/désactiver 2FA
+        }
+
+        function changeProfilePhoto() {
+            // Logique pour changer la photo de profil
+            alert('Fonctionnalité de changement de photo à implémenter');
+        }
+
+        // Gestion des formulaires
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const prenom = document.getElementById('prenomEdit').value;
+            const nom = document.getElementById('nomEdit').value;
+            const username = document.getElementById('usernameEdit').value;
+            
+            // Envoyer les données au serveur
+            fetch('/api/account/update_profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    prenom: prenom,
+                    nom: nom,
+                    username: username
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Profil mis à jour avec succès !');
+                    location.reload();
+                } else {
+                    alert('Erreur: ' + data.message);
+                }
+            });
+        });
+
+        document.getElementById('passwordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Fonctionnalité de changement de mot de passe à implémenter');
+        });
+
+        // Gestion annulation/réactivation d'abonnement
+        function cancelSubscription() {
+            if (confirm('Êtes-vous sûr de vouloir annuler le renouvellement automatique de votre plan ? Votre accès restera actif jusqu\'à la fin de la période payée.')) {
+                fetch('/api/account/cancel_subscription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Renouvellement automatique annulé. Votre plan restera actif jusqu\'à la fin de la période.');
+                        location.reload();
+                    } else {
+                        alert('Erreur: ' + data.message);
+                    }
+                });
+            }
+        }
+
+        function reactivateSubscription() {
+            if (confirm('Voulez-vous réactiver le renouvellement automatique de votre plan ?')) {
+                fetch('/api/account/reactivate_subscription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Renouvellement automatique réactivé avec succès !');
+                        location.reload();
+                    } else {
+                        alert('Erreur: ' + data.message);
+                    }
+                });
+            }
+        }
+
+        // Système de thème
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                if (theme === 'dark') {
+                    themeToggle.classList.add('active');
+                } else {
+                    themeToggle.classList.remove('active');
+                }
+            }
+            
+            // Mettre à jour les aperçus
+            document.querySelectorAll('.theme-preview').forEach(preview => {
+                preview.classList.remove('active');
+            });
+            const activePreview = document.querySelector(`.theme-${theme}`);
+            if (activePreview) {
+                activePreview.classList.add('active');
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+        }
+
+        // Initialiser le thème au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+        });
+    </script>
+</body>
+</html>

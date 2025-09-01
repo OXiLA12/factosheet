@@ -1,0 +1,1488 @@
+/* Styles supplémentaires pour FactoSheet Flask */
+
+/* Variables CSS pour les thèmes */
+:root {
+    --bg-gradient: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+    --bg-primary: rgba(255, 255, 255, 0.95);
+    --bg-secondary: rgba(255, 255, 255, 0.05);
+    --text-primary: #333;
+    --text-secondary: #666;
+    --text-muted: #999;
+    --border-color: rgba(76, 175, 80, 0.2);
+    --shadow: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+    --bg-gradient: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    --bg-primary: rgba(40, 40, 40, 0.95);
+    --bg-secondary: rgba(255, 255, 255, 0.05);
+    --text-primary: #e0e0e0;
+    --text-secondary: #b0b0b0;
+    --text-muted: #888;
+    --border-color: rgba(76, 175, 80, 0.3);
+    --shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* Toggle de thème pour la navigation */
+.theme-toggle-nav {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 1rem;
+    font-size: 1.2rem;
+}
+
+.theme-toggle-nav:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+}
+
+/* Notifications dynamiques */
+.notification {
+    position: fixed;
+    top: 100px;
+    right: 2rem;
+    padding: 1rem 1.5rem;
+    border-radius: 0.75rem;
+    color: white;
+    font-weight: 500;
+    z-index: 1001;
+    animation: slideInRight 0.3s ease-out;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.notification-success { 
+    background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+}
+
+.notification-error { 
+    background: linear-gradient(135deg, #f44336 0%, #ef5350 100%);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Améliorations boutons */
+.btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+/* Application des variables de thème aux éléments existants */
+.card {
+    background: var(--bg-primary) !important;
+    border: 1px solid var(--border-theme-color) !important;
+    box-shadow: var(--shadow-theme) !important;
+    color: var(--text-theme-primary) !important;
+}
+
+/* Application du thème aux pages de prévisualisation */
+body, .preview-layout, .main-content, .preview-table-container {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+/* Conteneurs de prévisualisation avec thème dynamique */
+.preview-layout {
+    background: var(--bg-primary);
+    min-height: 100vh;
+    transition: all 0.3s ease;
+}
+
+.preview-layout .main-content {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.main-container, .container {
+    background: var(--bg-primary) !important;
+    color: var(--text-theme-primary) !important;
+}
+
+.btn-secondary {
+    background: var(--bg-secondary) !important;
+    color: var(--text-theme-primary) !important;
+    border: 1px solid var(--border-theme-color) !important;
+}
+
+/* Headers et navigation */
+.header {
+    background: var(--bg-primary) !important;
+    color: var(--text-theme-primary) !important;
+    border-bottom: 1px solid var(--border-theme-color) !important;
+}
+
+/* Stats et cartes */
+.stat-card {
+    background: var(--bg-primary) !important;
+    border: 1px solid var(--border-theme-color) !important;
+    box-shadow: var(--shadow-theme) !important;
+    color: var(--text-theme-primary) !important;
+}
+
+/* Inputs et formulaires */
+input, select, textarea {
+    background: var(--bg-primary) !important;
+    color: var(--text-theme-primary) !important;
+    border: 1px solid var(--border-theme-color) !important;
+}
+
+/* Tables */
+table {
+    background: var(--bg-primary) !important;
+    color: var(--text-theme-primary) !important;
+}
+
+th, td {
+    border-color: var(--border-theme-color) !important;
+}
+
+/* Spinner de chargement amélioré */
+.loading-spinner {
+    position: relative;
+}
+
+.loading-spinner::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    margin: -30px 0 0 -30px;
+    border: 3px solid transparent;
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Effets sur les cartes */
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.card:hover::before {
+    opacity: 1;
+}
+
+/* Améliorations upload zone */
+.upload-zone.dragover {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+/* Responsive amélioré */
+@media (max-width: 480px) {
+    .notification {
+        right: 1rem;
+        left: 1rem;
+        width: auto;
+    }
+    
+    .hero h1 {
+        font-size: 2.5rem !important;
+    }
+    
+    .upload-zone {
+        padding: 2rem 1rem !important;
+    }
+}
+
+/* Styles pour tables de prévisualisation - Support thème sombre/clair */
+.preview-table-container {
+    background: var(--bg-primary);
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 8px 32px var(--shadow);
+    border: 1px solid var(--border-color);
+    margin: 2rem 0;
+    transition: all 0.3s ease;
+}
+
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    background: var(--bg-primary);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 4px 16px var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.preview-table thead {
+    background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+    color: white;
+}
+
+.preview-table th {
+    padding: 1rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    border: none;
+    color: white !important;
+}
+
+.preview-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    background: var(--bg-primary);
+}
+
+.preview-table tbody tr:hover {
+    background-color: rgba(76, 175, 80, 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
+}
+
+.preview-table td {
+    padding: 1rem 0.75rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.9rem;
+    border: none;
+    background: var(--bg-primary);
+    transition: all 0.3s ease;
+}
+
+.preview-table td.editable {
+    cursor: pointer;
+    color: #4CAF50;
+    font-weight: 600;
+    position: relative;
+}
+
+.preview-table td.editable input,
+.preview-table td.editable textarea {
+    font-family: inherit;
+    outline: none;
+    transition: all 0.2s ease;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.preview-table td.editable input:focus,
+.preview-table td.editable textarea:focus {
+    border-color: #4CAF50 !important;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    background: var(--bg-primary) !important;
+}
+
+.preview-table td.editable:hover {
+    background-color: rgba(76, 175, 80, 0.15);
+    color: #4CAF50 !important;
+}
+
+.preview-table .code-sh {
+    font-family: 'Courier New', monospace;
+    background-color: rgba(76, 175, 80, 0.15);
+    color: #4CAF50;
+    font-weight: bold;
+    border-radius: 0.25rem;
+    padding: 0.5rem !important;
+}
+
+.preview-table .description-sh {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 0.85rem;
+}
+
+.btn-edit {
+    background: linear-gradient(135deg, #FF9800 0%, #FFB74D 100%);
+    color: white !important;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.btn-edit:hover {
+    background: linear-gradient(135deg, #F57C00 0%, #FF9800 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+}
+
+/* Statistiques de prévisualisation */
+.preview-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2rem;
+    border-radius: 1rem;
+    text-align: center;
+    border: 2px solid rgba(76, 175, 80, 0.2);
+    box-shadow: 0 4px 20px rgba(76, 175, 80, 0.1);
+}
+
+.stat-card h3 {
+    font-size: 2.5rem;
+    color: #2E7D32 !important;
+    font-weight: bold;
+    margin: 0;
+}
+
+.stat-card p {
+    color: #424242 !important;
+    font-weight: 600;
+    margin: 0.5rem 0 0 0;
+    font-size: 1.1rem;
+}
+
+/* En-tête de prévisualisation */
+.preview-header h1 {
+    color: #1B5E20 !important;
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.preview-header .subtitle {
+    color: #424242 !important;
+    font-size: 1.2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+/* Options d'export */
+.export-options {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 8px 32px rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.export-options h3 {
+    color: #1B5E20 !important;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.checkbox-item {
+    color: #1a1a1a !important; /* Couleur sombre pour lisibilité */
+    font-weight: 500;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.9); /* Fond léger pour contraste */
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin: 4px 0;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.checkbox-item:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: #4CAF50;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
+}
+
+.checkbox-item input:checked + span {
+    color: #1B5E20 !important;
+    font-weight: bold;
+}
+
+.checkbox-item input[type="checkbox"]:checked ~ * {
+    background: rgba(76, 175, 80, 0.1) !important;
+    border-color: #4CAF50 !important;
+}
+
+/* Styles pour tables responsive */
+@media (max-width: 768px) {
+    .results-table {
+        font-size: 0.85rem;
+    }
+    
+    .results-table th,
+    .results-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .preview-table {
+        font-size: 0.8rem;
+    }
+    
+    .preview-table th,
+    .preview-table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .preview-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Styles pour le menu profil dropdown */
+.profile-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-avatar {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.profile-avatar:hover {
+    transform: scale(1.05);
+}
+
+.profile-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    min-width: 280px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+}
+
+.profile-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.profile-header {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.profile-name {
+    font-weight: 600;
+    color: #2E7D32;
+    font-size: 1.1rem;
+}
+
+.profile-email {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+.profile-divider {
+    height: 1px;
+    background: rgba(76, 175, 80, 0.2);
+    margin: 0 1rem;
+}
+
+.profile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    color: #333;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.profile-menu-item:hover {
+    background: rgba(76, 175, 80, 0.1);
+    color: #2E7D32;
+}
+
+.profile-menu-item.logout {
+    color: #f44336;
+    border-top: 1px solid rgba(76, 175, 80, 0.1);
+}
+
+.profile-menu-item.logout:hover {
+    background: rgba(244, 67, 54, 0.1);
+    color: #d32f2f;
+}
+
+.profile-menu-item svg {
+    flex-shrink: 0;
+}
+
+.avatar-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(76, 175, 80, 0.3);
+}
+
+.avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+/* Styles pour messages humoristiques et animations d'extraction */
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(0.95);
+    }
+}
+
+/* Styles pour les étapes de traitement avec messages humoristiques */
+.processing-step {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.2rem;
+    border-radius: 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid transparent;
+    color: var(--text-secondary);
+    min-width: 140px;
+    justify-content: center;
+}
+
+.processing-step.active {
+    background: var(--primary-color);
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    animation: pulse 2s infinite;
+}
+
+.processing-step.completed {
+    background: rgba(76, 175, 80, 0.1);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Animation pour le texte des messages humoristiques */
+#progressDetailsText {
+    transition: all 0.5s ease-in-out;
+    min-height: 1.5em;
+}
+
+
+/* Section Détection d'Anomalies */
+.anomaly-section {
+    background: var(--bg-primary);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    border: 2px solid var(--border-color);
+    box-shadow: 0 4px 20px var(--shadow);
+}
+
+.anomaly-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.anomaly-header h3 {
+    color: var(--text-primary);
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.quality-score {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.score-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.score-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2rem;
+    color: white;
+}
+
+.score-value.score-high {
+    background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+}
+
+.score-value.score-medium {
+    background: linear-gradient(135deg, #FF9800 0%, #FFB74D 100%);
+}
+
+.score-value.score-low {
+    background: linear-gradient(135deg, #f44336 0%, #ef5350 100%);
+}
+
+.severity-stats {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.severity-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    min-width: 100px;
+    transition: transform 0.3s ease;
+}
+
+.severity-item:hover {
+    transform: translateY(-2px);
+}
+
+.severity-item.severity-high {
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(239, 83, 80, 0.1) 100%);
+    border: 2px solid rgba(244, 67, 54, 0.3);
+}
+
+.severity-item.severity-medium {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 183, 77, 0.1) 100%);
+    border: 2px solid rgba(255, 152, 0, 0.3);
+}
+
+.severity-item.severity-low {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(100, 181, 246, 0.1) 100%);
+    border: 2px solid rgba(33, 150, 243, 0.3);
+}
+
+.severity-item .count {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.severity-item .label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.anomaly-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.anomaly-tab {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.anomaly-tab:hover {
+    background: var(--border-color);
+    transform: translateY(-1px);
+}
+
+.anomaly-tab.active {
+    background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+    color: white;
+    border-color: #4CAF50;
+}
+
+.count-badge {
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.anomaly-content {
+    background: var(--bg-secondary);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.anomaly-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.anomaly-item:hover {
+    transform: translateX(5px);
+}
+
+.anomaly-item.severity-haute {
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(239, 83, 80, 0.05) 100%);
+    border-left: 4px solid #f44336;
+}
+
+.anomaly-item.severity-moyenne {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 183, 77, 0.05) 100%);
+    border-left: 4px solid #FF9800;
+}
+
+.anomaly-item.severity-faible {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(100, 181, 246, 0.05) 100%);
+    border-left: 4px solid #2196F3;
+}
+
+.anomaly-icon {
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.anomaly-details {
+    flex: 1;
+}
+
+.anomaly-message {
+    color: var(--text-primary);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.anomaly-product {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.anomaly-product .supplier {
+    color: var(--text-muted);
+}
+
+.no-anomalies {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-secondary);
+}
+
+.success-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.no-anomalies h4 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+/* Surlignage des anomalies dans le tableau */
+.row-with-anomaly {
+    position: relative;
+    animation: anomalyPulse 2s ease-in-out infinite;
+}
+
+.row-with-anomaly.severity-haute {
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.15) 0%, rgba(239, 83, 80, 0.1) 100%) !important;
+    border-left: 5px solid #f44336;
+    box-shadow: 0 2px 10px rgba(244, 67, 54, 0.2);
+}
+
+.row-with-anomaly.severity-moyenne {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.15) 0%, rgba(255, 183, 77, 0.1) 100%) !important;
+    border-left: 5px solid #FF9800;
+    box-shadow: 0 2px 10px rgba(255, 152, 0, 0.2);
+}
+
+.row-with-anomaly.severity-faible {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.15) 0%, rgba(100, 181, 246, 0.1) 100%) !important;
+    border-left: 5px solid #2196F3;
+    box-shadow: 0 2px 10px rgba(33, 150, 243, 0.2);
+}
+
+.row-with-anomaly:hover {
+    transform: translateX(3px);
+    transition: transform 0.2s ease;
+}
+
+.anomaly-indicator {
+    display: inline-block;
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+    animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes anomalyPulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-3px);
+    }
+    60% {
+        transform: translateY(-1px);
+    }
+}
+
+/* Tooltip pour les lignes avec anomalies */
+.row-with-anomaly:hover::after {
+    content: "🔍 Ligne avec anomalie - Voir détails dans onglets";
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.95) 0%, rgba(239, 83, 80, 0.95) 100%);
+    color: white;
+    padding: 0.6rem 1rem;
+    border-radius: 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    z-index: 9999;
+    animation: tooltipFadeIn 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 6px 24px rgba(244, 67, 54, 0.4);
+    backdrop-filter: blur(8px);
+    max-width: 350px;
+    text-align: center;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* Amélioration visuelle des onglets d'anomalies */
+.anomaly-tab.has-critical {
+    border-color: #f44336;
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(239, 83, 80, 0.05) 100%);
+}
+
+.anomaly-tab.has-warning {
+    border-color: #FF9800;
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 183, 77, 0.05) 100%);
+}
+
+/* Badge spécial pour les onglets avec anomalies critiques */
+.anomaly-tab.has-critical .count-badge {
+    background: #f44336;
+    animation: criticalBlink 1.5s ease-in-out infinite;
+}
+
+@keyframes criticalBlink {
+    0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 5px #f44336;
+    }
+    50% {
+        opacity: 0.7;
+        box-shadow: 0 0 15px #f44336;
+    }
+}
+
+/* Surlignage actif pour les anomalies sélectionnées */
+.row-with-anomaly.highlight-active {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(129, 199, 132, 0.1) 100%) !important;
+    border: 2px solid #4CAF50 !important;
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3) !important;
+}
+
+/* Carte de statistiques d'anomalies */
+.anomaly-stat-card {
+    border: 2px solid #f44336 !important;
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(239, 83, 80, 0.05) 100%) !important;
+    animation: anomalyCardPulse 2s ease-in-out infinite;
+}
+
+@keyframes anomalyCardPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 20px rgba(244, 67, 54, 0.2);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 6px 25px rgba(244, 67, 54, 0.3);
+    }
+}
+
+/* Amélioration des indicateurs d'anomalies */
+.anomaly-indicator {
+    position: relative;
+}
+
+.anomaly-indicator::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 6px;
+    height: 6px;
+    background: #f44336;
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 1;
+    }
+}
+
+/* Surlignage spécifique des cellules avec anomalies */
+.cell-anomaly {
+    position: relative;
+    border: 2px solid !important;
+    animation: cellPulse 2s ease-in-out infinite;
+}
+
+.cell-anomaly.severity-haute {
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.25) 0%, rgba(239, 83, 80, 0.15) 100%) !important;
+    border-color: #f44336 !important;
+    box-shadow: inset 0 0 10px rgba(244, 67, 54, 0.3);
+}
+
+.cell-anomaly.severity-moyenne {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.25) 0%, rgba(255, 183, 77, 0.15) 100%) !important;
+    border-color: #FF9800 !important;
+    box-shadow: inset 0 0 10px rgba(255, 152, 0, 0.3);
+}
+
+.cell-anomaly.severity-faible {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.25) 0%, rgba(100, 181, 246, 0.15) 100%) !important;
+    border-color: #2196F3 !important;
+    box-shadow: inset 0 0 10px rgba(33, 150, 243, 0.3);
+}
+
+@keyframes cellPulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.9;
+        transform: scale(1.02);
+    }
+}
+
+/* Indicateur visuel spécial pour les cellules avec anomalies */
+.cell-anomaly::before {
+    content: '⚠️';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 0.7rem;
+    z-index: 10;
+    animation: bounce 1.5s ease-in-out infinite;
+}
+
+.cell-anomaly.severity-haute::before {
+    content: '🚨';
+}
+
+.cell-anomaly.severity-faible::before {
+    content: 'ℹ️';
+}
+
+/* Effet hover pour les cellules avec anomalies */
+.cell-anomaly:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+    z-index: 5;
+}
+
+/* Tooltip amélioré pour les cellules */
+.cell-anomaly:hover::after {
+    content: "Anomalie détectée - Voir onglet Anomalies";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(33, 33, 33, 0.95) 100%);
+    color: white;
+    padding: 0.8rem 1.2rem;
+    border-radius: 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    z-index: 10000;
+    animation: tooltipFadeIn 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    max-width: 300px;
+    text-align: center;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* Réduire l'animation de ligne pour mettre l'accent sur les cellules */
+.row-with-anomaly {
+    animation: none;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Garde seulement un léger effet sur la ligne complète au hover */
+.row-with-anomaly:hover {
+    background: rgba(244, 67, 54, 0.05) !important;
+}
+
+/* Surlignage focus pour les cellules sélectionnées dans les onglets */
+.cell-anomaly.highlight-focus {
+    animation: focusPulse 1s ease-in-out 3;
+    transform: scale(1.08);
+    z-index: 15;
+    border-width: 3px !important;
+    box-shadow: 0 0 20px rgba(244, 67, 54, 0.6) !important;
+}
+
+.cell-anomaly.highlight-focus.severity-moyenne {
+    box-shadow: 0 0 20px rgba(255, 152, 0, 0.6) !important;
+}
+
+.cell-anomaly.highlight-focus.severity-faible {
+    box-shadow: 0 0 20px rgba(33, 150, 243, 0.6) !important;
+}
+
+@keyframes focusPulse {
+    0%, 100% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.12);
+        opacity: 0.9;
+    }
+}
+
+/* Amélioration des indicateurs visuels */
+.cell-anomaly::before {
+    animation: iconBounce 2s ease-in-out infinite;
+}
+
+@keyframes iconBounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    40% {
+        transform: translateY(-2px) scale(1.1);
+    }
+    60% {
+        transform: translateY(-1px) scale(1.05);
+    }
+}
+
+/* Effet spécial quand on survole une cellule avec anomalie */
+.cell-anomaly:hover::before {
+    animation: spin 0.5s ease-in-out;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg) scale(1);
+    }
+    to {
+        transform: rotate(360deg) scale(1.2);
+    }
+}
+
+/* Amélioration des tooltips avec positionnement intelligent */
+.cell-anomaly.severity-haute:hover::after {
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.95) 0%, rgba(239, 83, 80, 0.95) 100%);
+    border-color: rgba(244, 67, 54, 0.4);
+    box-shadow: 0 8px 32px rgba(244, 67, 54, 0.4), 0 2px 8px rgba(244, 67, 54, 0.2);
+}
+
+.cell-anomaly.severity-moyenne:hover::after {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.95) 0%, rgba(255, 183, 77, 0.95) 100%);
+    border-color: rgba(255, 152, 0, 0.4);
+    box-shadow: 0 8px 32px rgba(255, 152, 0, 0.4), 0 2px 8px rgba(255, 152, 0, 0.2);
+}
+
+.cell-anomaly.severity-faible:hover::after {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.95) 0%, rgba(100, 181, 246, 0.95) 100%);
+    border-color: rgba(33, 150, 243, 0.4);
+    box-shadow: 0 8px 32px rgba(33, 150, 243, 0.4), 0 2px 8px rgba(33, 150, 243, 0.2);
+}
+
+/* Overlay sombre pour mieux faire ressortir les tooltips */
+.cell-anomaly:hover::before,
+.row-with-anomaly:hover::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: 9998;
+    pointer-events: none;
+    animation: overlayFadeIn 0.2s ease;
+}
+
+@keyframes overlayFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Assurer que les tooltips ne débordent jamais */
+@media (max-width: 768px) {
+    .cell-anomaly:hover::after,
+    .row-with-anomaly:hover::after {
+        max-width: 280px;
+        font-size: 0.75rem;
+        padding: 0.5rem 0.8rem;
+    }
+}
+
+/* Amélioration de la lisibilité sur les bordures */
+.cell-anomaly:hover::after {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.row-with-anomaly:hover::after {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Styles améliorés pour les cartes de factures */
+.invoice-card.has-anomalies {
+    border-left: 4px solid #ff9800;
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 183, 77, 0.05) 100%);
+}
+
+.invoice-card.has-anomalies:hover {
+    border-left-color: #f44336;
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+}
+
+.anomaly-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: linear-gradient(135deg, #ff9800 0%, #f44336 100%);
+    color: white;
+    padding: 0.2rem 0.4rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    animation: badgePulse 2s ease-in-out infinite;
+    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.4);
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+.invoice-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.invoice-meta > div {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+/* Animation en cascade pour le highlighting */
+.invoice-card.active {
+    animation: cardActive 0.5s ease;
+}
+
+@keyframes cardActive {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Amélioration visuelle des lignes surlignées */
+#dataTable tbody tr {
+    position: relative;
+}
+
+#dataTable tbody tr.highlighted-row {
+    z-index: 2;
+}
+
+/* Styles pour le nouveau système conservateur */
+.quality-status {
+    padding: 0.4rem 0.8rem;
+    border-radius: 1rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 2px solid;
+}
+
+.status-excellent {
+    background: linear-gradient(135deg, #4CAF50, #66BB6A);
+    color: white;
+    border-color: #4CAF50;
+}
+
+.status-good {
+    background: linear-gradient(135deg, #FFC107, #FFD54F);
+    color: #333;
+    border-color: #FFC107;
+}
+
+.status-attention {
+    background: linear-gradient(135deg, #FF9800, #FFB74D);
+    color: white;
+    border-color: #FF9800;
+}
+
+.status-critical {
+    background: linear-gradient(135deg, #F44336, #EF5350);
+    color: white;
+    border-color: #F44336;
+}
+
+.conservative-message {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1rem;
+    border-radius: 0.8rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid;
+}
+
+.message-info {
+    border-left-color: #2196F3;
+    background: rgba(33, 150, 243, 0.1);
+}
+
+.message-warning {
+    border-left-color: #FF9800;
+    background: rgba(255, 152, 0, 0.1);
+}
+
+.message-critical {
+    border-left-color: #F44336;
+    background: rgba(244, 67, 54, 0.1);
+}
+
+.severity-stats-minimal {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.severity-stats-minimal .severity-item {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    min-width: 80px;
+}
+
+.severity-total {
+    border: 2px solid #E0E0E0 !important;
+}
+
+.severity-total .count {
+    color: #757575 !important;
+}
+
+/* Styles spécifiques thème sombre pour la section anomalies */
+[data-theme="dark"] .anomaly-section {
+    background: rgba(40, 40, 40, 0.8);
+    border-color: rgba(76, 175, 80, 0.3);
+}
+
+[data-theme="dark"] .anomaly-header h3 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .conservative-message {
+    background: rgba(60, 60, 60, 0.9);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .message-info {
+    background: rgba(33, 150, 243, 0.15);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .message-warning {
+    background: rgba(255, 152, 0, 0.15);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .message-critical {
+    background: rgba(244, 67, 54, 0.15);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .severity-stats-minimal .severity-item {
+    background: rgba(60, 60, 60, 0.8);
+    color: var(--text-primary);
+}
+
+/* Amélioration des statistiques de prévisualisation en mode sombre */
+[data-theme="dark"] .sidebar-stats {
+    border-color: rgba(76, 175, 80, 0.3);
+}
+
+[data-theme="dark"] .invoice-card {
+    background: rgba(50, 50, 50, 0.8);
+    border-color: rgba(76, 175, 80, 0.4);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .invoice-card:hover {
+    background: rgba(76, 175, 80, 0.2);
+}
+
+[data-theme="dark"] .invoice-supplier {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .invoice-date {
+    color: var(--text-muted);
+}

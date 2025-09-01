@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}FactoSheet - Extraction Intelligente de Factures PDF{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="hero text-center mb-4">
+        <div class="fade-in-up">
+            <h1 style="font-size: 3.5rem; font-weight: 700; margin-bottom: 1.5rem; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                FactoSheet
+            </h1>
+            <p style="font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 1rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+                Extraction intelligente de données de factures PDF avec IA FactoSheet et classification douanière automatique (1,511 codes SH)
+            </p>
+            <div style="background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.2); border-radius: 12px; padding: 16px; margin: 1rem auto 2rem auto; max-width: 500px;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <svg width="18" height="18" fill="#4CAF50" viewBox="0 0 24 24">
+                        <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11.5C15.4,11.9 16,12.4 16,13V16C16,17.1 15.1,18 14,18H10C8.9,18 8,17.1 8,16V13C8,12.4 8.4,11.9 9,11.5V10C9,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.2,9.2 10.2,10V11.5H13.8V10C13.8,9.2 12.8,8.2 12,8.2Z"/>
+                    </svg>
+                    <span style="color: #4CAF50; font-weight: 500; font-size: 15px;">🔒 Vos données sont sécurisées et ne sont jamais stockées</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                {% if session.user_authenticated %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                        Accéder au Dashboard
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('auth') }}" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                        Commencer gratuitement
+                    </a>
+                    <a href="{{ url_for('pricing') }}" class="btn btn-secondary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                        Voir les plans
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features mb-4">
+        <div class="text-center mb-4">
+            <h2 style="font-size: 2.5rem; font-weight: 600; margin-bottom: 1rem;">Fonctionnalités</h2>
+            <p style="font-size: 1.1rem; color: var(--text-secondary);">Des outils puissants pour automatiser votre traitement de factures</p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem;">
+            <div class="card fade-in-up">
+                <div style="width: 60px; height: 60px; background: var(--gradient); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                    <svg width="30" height="30" fill="white" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem;">Extraction IA FactoSheet</h3>
+                <p style="color: var(--text-secondary);">Analyse intelligente des factures scannées avec une précision de 99,8% grâce à l'IA FactoSheet</p>
+            </div>
+
+            <div class="card fade-in-up">
+                <div style="width: 60px; height: 60px; background: var(--gradient); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                    <svg width="30" height="30" fill="white" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem;">Classification Douanière Avancée</h3>
+                <p style="color: var(--text-secondary);">Classification automatique avec 1,511 codes SH et cache intelligent pour vos déclarations douanières</p>
+            </div>
+
+            <div class="card fade-in-up">
+                <div style="width: 60px; height: 60px; background: var(--gradient); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                    <svg width="30" height="30" fill="white" viewBox="0 0 24 24">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem;">Export Justification Douanière</h3>
+                <p style="color: var(--text-secondary);">Templates Excel professionnels avec justification douanière groupée par code SH et pays d'origine</p>
+            </div>
+
+            <div class="card fade-in-up">
+                <div style="width: 60px; height: 60px; background: var(--gradient); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                    <svg width="30" height="30" fill="white" viewBox="0 0 24 24">
+                        <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11.5C15.4,11.9 16,12.4 16,13V16C16,17.1 15.1,18 14,18H10C8.9,18 8,17.1 8,16V13C8,12.4 8.4,11.9 9,11.5V10C9,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.2,9.2 10.2,10V11.5H13.8V10C13.8,9.2 12.8,8.2 12,8.2Z"/>
+                    </svg>
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem;">Sécurité Renforcée</h3>
+                <p style="color: var(--text-secondary);">Traitement confidentiel avec chiffrement bout-en-bout et suppression automatique des documents</p>
+            </div>
+
+            <div class="card fade-in-up">
+                <div style="width: 60px; height: 60px; background: var(--gradient); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                    <svg width="30" height="30" fill="white" viewBox="0 0 24 24">
+                        <path d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+                    </svg>
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem;">Cache Intelligent</h3>
+                <p style="color: var(--text-secondary);">Accélération de 44% du traitement grâce au système de cache et reconnaissance de marques</p>
+            </div>
+
+            <div class="card fade-in-up">
+                <div style="width: 60px; height: 60px; background: var(--gradient); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                    <svg width="30" height="30" fill="white" viewBox="0 0 24 24">
+                        <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+                    </svg>
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem;">Interface Moderne</h3>
+                <p style="color: var(--text-secondary);">Design glassmorphisme avec animations fluides et expérience utilisateur optimisée</p>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- CTA Section -->
+    <section class="cta text-center mb-4">
+        <div class="card" style="background: var(--gradient); color: white; text-align: center;">
+            {% if session.user_authenticated %}
+                <h2 style="font-size: 2rem; font-weight: 600; margin-bottom: 1rem;">Bon retour {{ session.user_data.prenom }} !</h2>
+                <p style="font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.9;">Vous avez {{ session.user_data.credits_disponibles|default(10) }} crédits disponibles</p>
+                <a href="{{ url_for('dashboard') }}" class="btn" style="background: white; color: var(--primary-color); font-weight: 600;">
+                    Traiter une facture
+                </a>
+            {% else %}
+                <h2 style="font-size: 2rem; font-weight: 600; margin-bottom: 1rem;">Prêt à automatiser vos factures ?</h2>
+                <p style="font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.9;">Commencez dès maintenant avec 10 crédits gratuits</p>
+                <a href="{{ url_for('auth') }}" class="btn" style="background: white; color: var(--primary-color); font-weight: 600;">
+                    Créer un compte gratuit
+                </a>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

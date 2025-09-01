@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation - FactoSheet</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .nav-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            padding: 3rem;
+            border-radius: 2rem;
+            text-align: center;
+            max-width: 500px;
+        }
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .nav-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .nav-grid.has-admin {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+        
+        .nav-item.admin {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+        }
+        .nav-item {
+            background: white;
+            color: #4CAF50;
+            padding: 1.5rem 1rem;
+            border-radius: 1rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .nav-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+        .nav-icon {
+            font-size: 2rem;
+        }
+        .status {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            border-radius: 1rem;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-container">
+        <div class="logo">🔥</div>
+        <h1>FactoSheet</h1>
+        <p>Navigation rapide vers votre compte et historique</p>
+        
+        <div class="nav-grid">
+            <a href="/compte" class="nav-item">
+                <div class="nav-icon">👤</div>
+                <div>Mon Compte</div>
+            </a>
+            
+            <a href="/historique" class="nav-item">
+                <div class="nav-icon">📊</div>
+                <div>Historique</div>
+            </a>
+            
+            <a href="/dashboard" class="nav-item">
+                <div class="nav-icon">📄</div>
+                <div>Extraction</div>
+            </a>
+            
+            <a href="/pricing" class="nav-item">
+                <div class="nav-icon">💎</div>
+                <div>Tarifs</div>
+            </a>
+            
+            <!-- Lien admin conditionnel -->
+            <a href="/admin" class="nav-item" id="adminLink" style="display: none;">
+                <div class="nav-icon">🔧</div>
+                <div>Admin</div>
+            </a>
+        </div>
+        
+        <div class="status">
+            ✅ Firebase Connecté<br>
+            ✅ Auto-Login Configuré<br>
+            ✅ Session Persistante
+        </div>
+        
+        <p style="margin-top: 1rem; opacity: 0.8; font-size: 0.9rem;">
+            Cliquez sur "Mon Compte" pour accéder à votre historique Firebase
+        </p>
+    </div>
+
+    <script>
+        // Vérifier si l'utilisateur est admin
+        async function checkAdminStatus() {
+            try {
+                const response = await fetch('/api/user-info');
+                if (response.ok) {
+                    const userData = await response.json();
+                    if (userData.email === 'factosheet123@gmail.com') {
+                        const adminLink = document.getElementById('adminLink');
+                        adminLink.style.display = 'flex';
+                        adminLink.classList.add('admin');
+                        document.querySelector('.nav-grid').classList.add('has-admin');
+                    }
+                }
+            } catch (error) {
+                console.log('Impossible de vérifier le statut admin');
+            }
+        }
+        
+        // Vérifier le statut admin au chargement
+        checkAdminStatus();
+        
+        // Auto-redirect vers compte après 8 secondes si pas d'interaction
+        let autoRedirect = setTimeout(() => {
+            window.location.href = '/compte';
+        }, 8000);
+        
+        // Annuler auto-redirect si interaction
+        document.addEventListener('click', () => {
+            clearTimeout(autoRedirect);
+        });
+    </script>
+</body>
+</html>

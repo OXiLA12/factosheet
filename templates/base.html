@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FactoSheet - Extraction Intelligente de Factures{% endblock %}</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS externe -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Scripts PWA -->
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/offline.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+    
+    <!-- Manifest PWA -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    
+    <!-- Meta tags PWA -->
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="FactoSheet">
+    
+    <!-- Icons iOS -->
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-152x152.svg') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/icon-192x192.svg') }}">
+    
+    <!-- Styles -->
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-dark: #2E7D32;
+            --secondary-color: #81C784;
+            --accent-color: #007aff;
+            --background: #f8fffe;
+            --surface: rgba(255, 255, 255, 0.95);
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+            --gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            
+            /* Variables de thème - mode clair par défaut */
+            --bg-gradient: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            --bg-primary: rgba(255, 255, 255, 0.95);
+            --bg-secondary: rgba(255, 255, 255, 0.05);
+            --text-theme-primary: #333;
+            --text-theme-secondary: #666;
+            --text-muted: #999;
+            --border-theme-color: rgba(76, 175, 80, 0.2);
+            --shadow-theme: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --background: #1a1a1a;
+            --surface: rgba(40, 40, 40, 0.95);
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --border-color: rgba(76, 175, 80, 0.3);
+            --shadow: rgba(0, 0, 0, 0.3);
+            --shadow-hover: rgba(0, 0, 0, 0.5);
+            
+            /* Variables de thème - mode sombre */
+            --bg-gradient: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            --bg-primary: rgba(40, 40, 40, 0.95);
+            --bg-secondary: rgba(255, 255, 255, 0.05);
+            --text-theme-primary: #e0e0e0;
+            --text-theme-secondary: #b0b0b0;
+            --text-muted: #888;
+            --border-theme-color: rgba(76, 175, 80, 0.3);
+            --shadow-theme: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-theme-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Fond blanc spécifique pour la page de prévisualisation */
+        body.preview-page {
+            background: white !important;
+            color: #333 !important;
+        }
+
+        /* Glassmorphisme */
+        .glass {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow);
+        }
+
+        .glass:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+
+        .nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--primary-color);
+        }
+
+        .user-info {
+            color: var(--accent-color);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        /* Main content */
+        .main {
+            padding-top: 100px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-google {
+            background: white;
+            color: #3c4043;
+            border: 2px solid #dadce0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn-google:hover {
+            background: #f8f9fa;
+            border-color: #dadce0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 1rem;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+            
+            .nav {
+                gap: 1rem;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .main {
+                padding-top: 80px;
+            }
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .profile-avatar:hover {
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .profile-menu {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-color);
+            min-width: 280px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .profile-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .profile-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .profile-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-email {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .profile-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 0.5rem 0;
+        }
+
+        .profile-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .profile-menu-item:hover {
+            background: rgba(76, 175, 80, 0.05);
+            color: var(--primary-color);
+        }
+
+        .profile-menu-item.logout {
+            color: #f44336;
+        }
+
+        .profile-menu-item.logout:hover {
+            background: rgba(244, 67, 54, 0.05);
+            color: #f44336;
+        }
+
+        /* Utilities */
+        .text-center { text-align: center; }
+        .text-primary { color: var(--primary-color); }
+        .text-secondary { color: var(--text-secondary); }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        .mb-4 { margin-bottom: 2rem; }
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+        .mt-4 { margin-top: 2rem; }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <header class="header">
+        <div class="header-content">
+            <a href="{{ url_for('index') }}" class="logo">FactoSheet</a>
+            <nav class="nav">
+                {% if session.user_authenticated %}
+                    <a href="{{ url_for('index') }}" class="nav-link">Accueil</a>
+                    <a href="{{ url_for('dashboard') }}" class="nav-link">Extraction</a>
+                    <a href="{{ url_for('pricing') }}" class="nav-link">Tarifs</a>
+                    <span class="user-info">{{ session.user_data.credits_disponibles|default(10) }} crédits restants</span>
+                    
+                    <!-- Photo de profil -->
+                    <div class="profile-dropdown">
+                        <div class="profile-avatar" onclick="toggleProfileMenu()">
+                            {% if session.user_data.photo_url %}
+                                <img src="{{ session.user_data.photo_url }}" alt="Profile" class="avatar-img">
+                            {% else %}
+                                <div class="avatar-placeholder">
+                                    {{ session.user_data.prenom[0]|upper }}{{ session.user_data.nom[0]|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="profile-menu" id="profileMenu">
+                            <div class="profile-header">
+                                <div class="profile-name">{{ session.user_data.prenom }} {{ session.user_data.nom }}</div>
+                                <div class="profile-email">{{ session.user_data.email }}</div>
+                            </div>
+                            <div class="profile-divider"></div>
+                            <a href="javascript:void(0)" onclick="goToAccount()" class="profile-menu-item">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+                                </svg>
+                                Mon compte
+                            </a>
+                            
+                            <!-- Lien admin (visible seulement pour factosheet123@gmail.com) -->
+                            {% if session.user_data.email == 'factosheet123@gmail.com' %}
+                            <a href="{{ url_for('admin_dashboard') }}" class="profile-menu-item" style="background: linear-gradient(135deg, #ff6b35, #f7931e); color: white; margin: 0.25rem;">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+                                </svg>
+                                🔧 Administration
+                            </a>
+                            {% endif %}
+                            
+                            <a href="{{ url_for('pricing') }}" class="profile-menu-item">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M17,8.5C17,7.12 15.88,6 14.5,6C13.12,6 12,7.12 12,8.5C12,9.88 13.12,11 14.5,11C15.88,11 17,9.88 17,8.5M8,19H16V17.5C16,15.5 14.5,14 12.5,14H10.5C8.5,14 7,15.5 7,17.5V19H8Z"/>
+                                </svg>
+                                Abonnement
+                            </a>
+                            <div class="profile-divider"></div>
+                            <a href="{{ url_for('logout') }}" class="profile-menu-item logout">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M16,17V14H9V10H16V7L21,12L16,17M14,2A2,2 0 0,1 16,4V6H14V4H5V20H14V18H16V20A2,2 0 0,1 14,22H5A2,2 0 0,1 3,20V4A2,2 0 0,1 5,2H14Z"/>
+                                </svg>
+                                Déconnexion
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{{ url_for('index') }}" class="nav-link">Accueil</a>
+                    <a href="{{ url_for('pricing') }}" class="nav-link">Tarifs</a>
+                    <a href="{{ url_for('auth') }}" class="btn btn-primary">Connexion</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Scripts -->
+    <script>
+        // Fonctions utilitaires
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        // Profile dropdown
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profileMenu');
+            if (menu) {
+                menu.classList.toggle('show');
+                console.log('Menu profil toggled, show class:', menu.classList.contains('show'));
+            } else {
+                console.error('Element profileMenu non trouvé');
+            }
+        }
+
+        // Navigation vers le compte - force la redirection
+        function goToAccount() {
+            console.log('Redirection vers compte...');
+            // Fermer le menu d'abord
+            const menu = document.getElementById('profileMenu');
+            if (menu) {
+                menu.classList.remove('show');
+            }
+            
+            // Redirection forcée avec délai
+            setTimeout(() => {
+                console.log('Executing redirect to /compte');
+                window.location.replace('/compte');
+            }, 100);
+        }
+
+        // Fermer le menu si on clique ailleurs
+        document.addEventListener('click', function(event) {
+            const profileDropdown = document.querySelector('.profile-dropdown');
+            const menu = document.getElementById('profileMenu');
+            
+            if (profileDropdown && !profileDropdown.contains(event.target)) {
+                menu?.classList.remove('show');
+            }
+        });
+
+        // Animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const elements = document.querySelectorAll('.fade-in-up');
+            elements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+
+        // Installation PWA
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Afficher le bouton d'installation
+            showInstallButton();
+        });
+
+        function showInstallButton() {
+            const installBtn = document.createElement('div');
+            installBtn.className = 'pwa-install-btn';
+            installBtn.innerHTML = `
+                <button onclick="installPWA()" class="install-pwa-button">
+                    📱 Installer l'app
+                </button>
+            `;
+            document.body.appendChild(installBtn);
+        }
+
+        function installPWA() {
+            if (!deferredPrompt) return;
+            
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('PWA installée');
+                }
+                deferredPrompt = null;
+                document.querySelector('.pwa-install-btn')?.remove();
+            });
+        }
+
+        // Enregistrer le Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+
+<!-- Toggle de thème flottant -->
+<div class="floating-theme-toggle" onclick="toggleTheme()" title="Changer le thème">
+    <span id="themeIcon">🌙</span>
+</div>
+
+<style>
+    /* Toggle de thème flottant */
+    .floating-theme-toggle {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-theme-color);
+        border-radius: 50px;
+        padding: 1rem;
+        box-shadow: var(--shadow-theme);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1.5rem;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(20px);
+    }
+    
+    .floating-theme-toggle:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 30px var(--shadow-theme);
+    }
+
+    /* Styles pour installation PWA */
+    .pwa-install-btn {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        z-index: 999;
+    }
+
+    .install-pwa-button {
+        background: linear-gradient(135deg, #4CAF50, #81C784);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+
+    .install-pwa-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+    }
+    
+    @media (max-width: 768px) {
+        .floating-theme-toggle {
+            bottom: 15px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+        }
+    }
+</style>
+
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accès Rapide - FactoSheet</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 600px;
+        }
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: white;
+            color: #4CAF50;
+            text-decoration: none;
+            border-radius: 1rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 1rem;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .status {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 2rem 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🔥 FactoSheet</div>
+        <h1>Accès Rapide à Votre Compte</h1>
+        
+        <div class="status">
+            ✅ Firebase Connecté<br>
+            ✅ Auto-Login Configuré<br>
+            ✅ Historique Disponible
+        </div>
+        
+        <a href="/compte" class="btn">🔑 Accéder à Mon Compte</a>
+        <a href="/dashboard" class="btn">📄 Traiter une Facture</a>
+        <a href="/" class="btn">🏠 Accueil</a>
+        
+        <p style="margin-top: 2rem; opacity: 0.8;">
+            Cliquez sur "Accéder à Mon Compte" pour vous connecter automatiquement<br>
+            et consulter votre historique Firebase
+        </p>
+    </div>
+
+    <script>
+        // Auto-redirect après 3 secondes si pas d'interaction
+        setTimeout(function() {
+            if (!document.hidden) {
+                window.location.href = '/auto-login';
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

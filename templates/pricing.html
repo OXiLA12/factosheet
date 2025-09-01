@@ -1,0 +1,839 @@
+{% extends "base.html" %}
+
+{% block title %}Tarifs & Abonnements - FactoSheet{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pricing-container {
+        padding: 3rem 0;
+    }
+
+    .pricing-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .pricing-header h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        background: var(--gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+    }
+
+    .pricing-subtitle {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+    }
+
+    .billing-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background: white;
+        transition: 0.4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background: var(--primary-color);
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+
+    .discount-badge {
+        background: linear-gradient(135deg, #FF6B35, #F7931E);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+
+    .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        margin-bottom: 4rem;
+    }
+
+    .pricing-card {
+        background: var(--surface);
+        border-radius: 2rem;
+        padding: 2.5rem;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .pricing-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .pricing-card.popular {
+        border: 3px solid var(--primary-color);
+        transform: scale(1.05);
+    }
+
+    .pricing-card.popular::before {
+        content: 'Le plus populaire';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: var(--primary-color);
+        color: white;
+        text-align: center;
+        padding: 0.75rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .pricing-card.popular .card-content {
+        margin-top: 1rem;
+    }
+
+    .plan-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+
+    .plan-description {
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .plan-price {
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    .price-amount {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .price-currency {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-left: 0.25rem;
+    }
+
+    .price-period {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        margin-left: 0.5rem;
+    }
+
+    .price-original {
+        font-size: 1.2rem;
+        text-decoration: line-through;
+        color: var(--text-secondary);
+        margin-right: 0.5rem;
+    }
+
+    .features-list {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 2rem;
+    }
+
+    .features-list li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 0.95rem;
+    }
+
+    .features-list li:before {
+        content: '✓';
+        color: var(--primary-color);
+        font-weight: bold;
+        width: 20px;
+        margin-right: 1rem;
+    }
+
+    .plan-button {
+        width: 100%;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .plan-button.primary {
+        background: var(--gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+
+    .plan-button.primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+    }
+
+    .plan-button.secondary {
+        background: transparent;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+
+    .plan-button.secondary:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .plan-button.current {
+        background: #e8f5e8;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+        cursor: default;
+    }
+
+    .credits-section {
+        margin-top: 4rem;
+        text-align: center;
+    }
+
+    .credits-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+    .credits-subtitle {
+        color: var(--text-secondary);
+        margin-bottom: 3rem;
+    }
+
+    .credits-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .credit-pack {
+        background: linear-gradient(135deg, rgba(255, 152, 0, 0.05), rgba(255, 193, 7, 0.02));
+        border: 2px solid rgba(255, 152, 0, 0.2);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .credit-pack:hover {
+        border-color: rgba(255, 152, 0, 0.4);
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(255, 152, 0, 0.2);
+    }
+
+    .credit-amount {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #FF9800;
+        margin-bottom: 0.5rem;
+    }
+
+    .credit-price {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .credit-unit-price {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+    }
+
+    .faq-section {
+        margin-top: 4rem;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .faq-title {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        color: var(--text-primary);
+    }
+
+    .faq-item {
+        background: var(--surface);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: var(--shadow);
+    }
+
+    .faq-question {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .faq-answer {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        display: none;
+    }
+
+    .faq-answer.show {
+        display: block;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    .guarantee-banner {
+        background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(129, 199, 132, 0.05));
+        border: 2px solid rgba(76, 175, 80, 0.2);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        margin: 3rem auto;
+        max-width: 600px;
+        text-align: center;
+    }
+
+    .guarantee-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+
+    .guarantee-text {
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .pricing-container {
+            padding: 2rem 0;
+        }
+        
+        .pricing-header h1 {
+            font-size: 2rem;
+        }
+        
+        .pricing-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .pricing-card.popular {
+            transform: none;
+        }
+        
+        .credits-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .plan-price {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .price-period {
+            margin-left: 0;
+            margin-top: 0.5rem;
+        }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="pricing-container">
+        
+        <!-- En-tête -->
+        <div class="pricing-header fade-in-up">
+            <h1>Tarifs Simples et Transparents</h1>
+            <p class="pricing-subtitle">
+                Choisissez le plan qui correspond à vos besoins d'extraction de documents
+            </p>
+            
+            <div class="billing-toggle">
+                <span>Mensuel</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="billingToggle">
+                    <span class="slider"></span>
+                </label>
+                <span>Annuel <span class="discount-badge">-20%</span></span>
+            </div>
+        </div>
+
+        <!-- Grille des plans -->
+        <div class="pricing-grid fade-in-up">
+            
+            <!-- Plan Découverte -->
+            <div class="pricing-card">
+                <div class="card-content">
+                    <div class="plan-name">Plan Découverte</div>
+                    <div class="plan-description">
+                        Parfait pour découvrir FactoSheet et traiter vos premiers documents
+                    </div>
+                    
+                    <div class="plan-price">
+                        <span class="price-amount">0</span>
+                        <span class="price-currency">€</span>
+                        <span class="price-period">/ mois</span>
+                    </div>
+                    
+                    <ul class="features-list">
+                        <li>Extraction basique PDF</li>
+                        <li>Templates prédéfinis</li>
+                        <li>10 crédits par mois</li>
+                        <li>5 extractions par jour max</li>
+                        <li>Support email</li>
+                    </ul>
+                    
+                    <button class="plan-button secondary" onclick="selectPlan('decouverte')">
+                        Commencer gratuitement
+                    </button>
+                </div>
+            </div>
+
+            <!-- Plan Pro -->
+            <div class="pricing-card popular">
+                <div class="card-content">
+                    <div class="plan-name">Plan Pro</div>
+                    <div class="plan-description">
+                        Idéal pour les professionnels avec des besoins réguliers d'extraction
+                    </div>
+                    
+                    <div class="plan-price">
+                        <span class="price-original monthly-price" style="display: none;">23.90€</span>
+                        <span class="price-amount monthly-price">19</span>
+                        <span class="price-amount annual-price" style="display: none;">15</span>
+                        <span class="price-currency">.90€</span>
+                        <span class="price-period">/ mois</span>
+                    </div>
+                    
+                    <ul class="features-list">
+                        <li>Extraction PDF + Images</li>
+                        <li>Templates personnalisés illimités</li>
+                        <li>500 crédits par mois</li>
+                        <li>100 extractions par jour max</li>
+                        <li>IA apprentissage avancé</li>
+                        <li>Sauvegarde cloud sécurisée</li>
+                        <li>Support prioritaire</li>
+                    </ul>
+                    
+                    <button class="plan-button primary" onclick="selectPlan('pro')">
+                        Choisir Pro
+                    </button>
+                </div>
+            </div>
+
+            <!-- Plan Business -->
+            <div class="pricing-card">
+                <div class="card-content">
+                    <div class="plan-name">Plan Business</div>
+                    <div class="plan-description">
+                        Solution complète pour les entreprises avec volumes importants
+                    </div>
+                    
+                    <div class="plan-price">
+                        <span class="price-original monthly-price" style="display: none;">59.90€</span>
+                        <span class="price-amount monthly-price">49</span>
+                        <span class="price-amount annual-price" style="display: none;">39</span>
+                        <span class="price-currency">.90€</span>
+                        <span class="price-period">/ mois</span>
+                    </div>
+                    
+                    <ul class="features-list">
+                        <li>Toutes les fonctionnalités Pro</li>
+                        <li>2000 crédits par mois</li>
+                        <li>Extractions illimitées</li>
+                        <li>Templates collaboratifs</li>
+                        <li>API d'intégration</li>
+                        <li>Analytics avancés</li>
+                        <li>Support téléphonique</li>
+                        <li>SLA 99.9%</li>
+                    </ul>
+                    
+                    <button class="plan-button primary" onclick="selectPlan('business')">
+                        Choisir Business
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section crédits supplémentaires -->
+        <div class="credits-section fade-in-up">
+            <h2 class="credits-title">Crédits Supplémentaires</h2>
+            <p class="credits-subtitle">
+                Besoin de plus de crédits ? Achetez des packs supplémentaires à tout moment
+            </p>
+            
+            <div class="credits-grid">
+                <div class="credit-pack">
+                    <div class="credit-amount">50</div>
+                    <div>crédits</div>
+                    <div class="credit-price">9.90€</div>
+                    <div class="credit-unit-price">0.20€ par crédit</div>
+                    <button class="plan-button secondary" onclick="buyCreditPack('pack_50')">
+                        Acheter
+                    </button>
+                </div>
+                
+                <div class="credit-pack">
+                    <div class="credit-amount">200</div>
+                    <div>crédits</div>
+                    <div class="credit-price">29.90€</div>
+                    <div class="credit-unit-price">0.15€ par crédit</div>
+                    <button class="plan-button secondary" onclick="buyCreditPack('pack_200')">
+                        Acheter
+                    </button>
+                </div>
+                
+                <div class="credit-pack">
+                    <div class="credit-amount">500</div>
+                    <div>crédits</div>
+                    <div class="credit-price">59.90€</div>
+                    <div class="credit-unit-price">0.12€ par crédit</div>
+                    <button class="plan-button secondary" onclick="buyCreditPack('pack_500')">
+                        Acheter
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Garantie -->
+        <div class="guarantee-banner fade-in-up">
+            <div class="guarantee-title">🔒 Service Professionnel de Qualité</div>
+            <p class="guarantee-text">
+                Plateforme d'extraction IA avancée avec support technique dédié et mises à jour régulières.
+            </p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="faq-section fade-in-up">
+            <h2 class="faq-title">Questions Fréquentes</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Comment fonctionnent les crédits ?
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    Chaque extraction coûte 1 crédit par page PDF ou par image traitée. Les crédits se renouvellent chaque mois selon votre plan. Les crédits non utilisés ne sont pas reportés.
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Puis-je changer de plan à tout moment ?
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    Oui, vous pouvez upgrader ou downgrader votre plan à tout moment. Les changements sont pro-rata et prennent effet immédiatement.
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Mes données sont-elles sécurisées ?
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    Absolument ! Vos documents sont chiffrés de bout en bout, stockés sur des serveurs sécurisés en Europe, et automatiquement supprimés après traitement selon nos politiques de rétention.
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Y a-t-il un engagement de durée ?
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    Non, tous nos plans sont sans engagement. Vous pouvez annuler votre abonnement à tout moment depuis votre compte.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentUser = null;
+    let isAnnualBilling = false;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        currentUser = '{{ user_data.id if user_data else "" }}';
+        console.log('🔍 CurrentUser in pricing:', currentUser);
+        console.log('🔍 User_data disponible:', {{ user_data|tojson if user_data else '{}' }});
+        
+        // Toggle facturation
+        document.getElementById('billingToggle').addEventListener('change', function() {
+            isAnnualBilling = this.checked;
+            updatePricing();
+        });
+        
+        // Vérifier le plan actuel de l'utilisateur si connecté
+        if (currentUser) {
+            loadCurrentPlan();
+        }
+    });
+    
+    function updatePricing() {
+        const monthlyPrices = document.querySelectorAll('.monthly-price');
+        const annualPrices = document.querySelectorAll('.annual-price');
+        
+        if (isAnnualBilling) {
+            monthlyPrices.forEach(el => el.style.display = 'none');
+            annualPrices.forEach(el => el.style.display = 'inline');
+        } else {
+            monthlyPrices.forEach(el => el.style.display = 'inline');
+            annualPrices.forEach(el => el.style.display = 'none');
+        }
+    }
+    
+    async function loadCurrentPlan() {
+        try {
+            const response = await fetch('/api/subscription/info');
+            if (response.ok) {
+                const subscriptionInfo = await response.json();
+                updateCurrentPlanUI(subscriptionInfo.plan_name);
+            }
+        } catch (error) {
+            console.error('Erreur chargement plan actuel:', error);
+        }
+    }
+    
+    function updateCurrentPlanUI(currentPlan) {
+        // Marquer le plan actuel
+        document.querySelectorAll('.plan-button').forEach(button => {
+            if (button.onclick && button.onclick.toString().includes(`'${currentPlan}'`)) {
+                button.textContent = 'Plan Actuel';
+                button.className = 'plan-button current';
+                button.onclick = null;
+            }
+        });
+    }
+    
+    async function selectPlan(planName) {
+        console.log('🔍 selectPlan appelée avec:', planName);
+        console.log('🔍 currentUser value:', currentUser);
+        
+        if (!currentUser || currentUser === '') {
+            console.log('❌ Pas d\'utilisateur connecté - redirection vers auth');
+            // Rediriger vers l'authentification
+            sessionStorage.setItem('selectedPlan', planName);
+            window.location.href = '/auth';
+            return;
+        }
+        
+        if (planName === 'decouverte') {
+            // Plan gratuit - activation directe
+            try {
+                const response = await fetch('/api/subscription/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        plan: planName
+                    })
+                });
+                
+                if (response.ok) {
+                    showNotification('✅ Plan Découverte activé !', 'success');
+                    updateCurrentPlanUI(planName);
+                } else {
+                    throw new Error('Erreur activation plan');
+                }
+            } catch (error) {
+                console.error('Erreur activation plan gratuit:', error);
+                showNotification('❌ Erreur lors de l\'activation', 'error');
+            }
+        } else {
+            // Plans payants - rediriger vers checkout
+            try {
+                const response = await fetch('/api/subscription/create-checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        plan: planName,
+                        billing: isAnnualBilling ? 'annual' : 'monthly'
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.checkout_url) {
+                        window.location.href = result.checkout_url;
+                    } else {
+                        throw new Error('URL de checkout manquante');
+                    }
+                } else {
+                    throw new Error('Erreur création checkout');
+                }
+            } catch (error) {
+                console.error('Erreur sélection plan:', error);
+                showNotification('❌ Erreur lors de la sélection', 'error');
+            }
+        }
+    }
+    
+    async function buyCreditPack(packName) {
+        if (!currentUser) {
+            sessionStorage.setItem('selectedCreditPack', packName);
+            window.location.href = '/auth';
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/credits/buy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    pack: packName
+                })
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                if (result.checkout_url) {
+                    window.location.href = result.checkout_url;
+                } else {
+                    throw new Error('URL de checkout manquante');
+                }
+            } else {
+                throw new Error('Erreur création checkout');
+            }
+        } catch (error) {
+            console.error('Erreur achat crédits:', error);
+            showNotification('❌ Erreur lors de l\'achat', 'error');
+        }
+    }
+    
+    function toggleFaq(element) {
+        const answer = element.nextElementSibling;
+        const icon = element.querySelector('span');
+        
+        if (answer.classList.contains('show')) {
+            answer.classList.remove('show');
+            icon.textContent = '+';
+        } else {
+            // Fermer toutes les autres FAQ
+            document.querySelectorAll('.faq-answer').forEach(ans => {
+                ans.classList.remove('show');
+            });
+            document.querySelectorAll('.faq-question span').forEach(ic => {
+                ic.textContent = '+';
+            });
+            
+            // Ouvrir celle-ci
+            answer.classList.add('show');
+            icon.textContent = '−';
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease-out;
+        `;
+        
+        if (type === 'success') notification.style.background = 'linear-gradient(135deg, #4CAF50, #81C784)';
+        else if (type === 'error') notification.style.background = 'linear-gradient(135deg, #F44336, #EF5350)';
+        else notification.style.background = 'linear-gradient(135deg, #2196F3, #64B5F6)';
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 4000);
+    }
+</script>
+{% endblock %}

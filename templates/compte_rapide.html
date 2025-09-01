@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Compte - {{ user_data.prenom }} {{ user_data.nom }} - FactoSheet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .nav-link {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-link:hover {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2E7D32;
+        }
+
+        .profile-edit-btn {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .profile-edit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .welcome-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 3rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            text-align: left;
+        }
+
+        .profile-avatar-container {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-initials {
+            font-size: 2.5rem;
+        }
+
+        .avatar-edit-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .profile-avatar:hover .avatar-edit-overlay {
+            opacity: 1;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name-section, .profile-username-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .edit-btn {
+            background: rgba(76, 175, 80, 0.1);
+            border: none;
+            padding: 0.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #2E7D32;
+            transition: all 0.3s ease;
+            opacity: 0.7;
+        }
+
+        .edit-btn:hover {
+            background: rgba(76, 175, 80, 0.2);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .profile-username {
+            color: #666;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .welcome-text {
+            margin-top: 1rem;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .profile-name {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #2E7D32;
+            margin-bottom: 0.5rem;
+        }
+        
+        .profile-email {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .profile-plan {
+            display: inline-block;
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            text-transform: capitalize;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            text-align: center;
+            border: 2px solid rgba(76, 175, 80, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2E7D32;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .info-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 2.5rem;
+            margin: 2rem 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2E7D32;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .info-text {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2E7D32;
+            border: 2px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }
+        
+        /* Modales */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2E7D32;
+        }
+
+        .close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .username-status {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .status-available {
+            color: #4CAF50;
+        }
+
+        .status-unavailable {
+            color: #f44336;
+        }
+
+        .avatar-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .avatar-option {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .avatar-option:hover, .avatar-option.selected {
+            border-color: #4CAF50;
+            transform: scale(1.1);
+        }
+
+        .success-message, .error-message {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .success-message {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .error-message {
+            background: rgba(244, 67, 54, 0.1);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+        .file-upload-area {
+            border: 2px dashed #4CAF50;
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .file-upload-area:hover {
+            border-color: #2E7D32;
+            background: rgba(76, 175, 80, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .upload-section h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .welcome-card, .info-section {
+                padding: 2rem;
+            }
+            
+            .profile-name {
+                font-size: 1.8rem;
+            }
+
+            .profile-section {
+                flex-direction: column;
+                text-align: center;
+                gap: 1.5rem;
+            }
+
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="/" class="logo">FactoSheet</a>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Accueil</a>
+            <a href="/dashboard" class="nav-link">Extraction</a>
+            <a href="/pricing" class="nav-link">Tarifs</a>
+            <a href="/logout" class="nav-link" style="color: #f44336;">Déconnexion</a>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Profil utilisateur -->
+        <div class="welcome-card">
+            <div class="profile-section">
+                <div class="profile-avatar-container">
+                    <div class="profile-avatar" onclick="changeProfilePhoto()">
+                        {% if user_data.get('photo_url') %}
+                            <img src="{{ user_data.photo_url }}" alt="Photo de profil" class="avatar-img">
+                        {% else %}
+                            <span class="avatar-initials">{{ user_data.prenom[0]|upper }}{{ user_data.nom[0]|upper }}</span>
+                        {% endif %}
+                        <div class="avatar-edit-overlay">
+                            <span>📸</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-info">
+                    <div class="profile-name-section">
+                        <h2 class="profile-name" id="displayName">{{ user_data.prenom }} {{ user_data.nom }}</h2>
+                        <button class="edit-btn" onclick="editName()" title="Modifier le nom">✏️</button>
+                    </div>
+                    
+                    <div class="profile-username-section">
+                        <span class="profile-username" id="displayUsername">
+                            @{{ user_data.get('username', user_data.email.split('@')[0]) }}
+                        </span>
+                        <button class="edit-btn" onclick="editUsername()" title="Modifier le nom d'utilisateur">✏️</button>
+                    </div>
+                    
+                    <div class="profile-email">{{ user_data.email }}</div>
+                    <div class="profile-plan">Plan {{ user_data.plan|title }}</div>
+                    
+                    <p class="welcome-text">
+                        Bienvenue dans votre espace personnel FactoSheet
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">💎</div>
+                <div class="stat-number">{{ user_data.credits_disponibles|default(10) }}</div>
+                <div class="stat-label">Crédits Disponibles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-number">{{ user_data.credits_utilises|default(0) }}</div>
+                <div class="stat-label">Crédits Utilisés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-number">{{ user_data.plan|title }}</div>
+                <div class="stat-label">Plan Actuel</div>
+            </div>
+        </div>
+
+        <!-- Informations importantes -->
+        <div class="info-section">
+            <div class="section-title">
+                🛡️ Sécurité et Confidentialité
+            </div>
+            <p class="info-text">
+                Vos données sont protégées par FactoSheet. Tous les documents que vous traitez sont automatiquement supprimés après extraction pour garantir votre confidentialité.
+            </p>
+            <p class="info-text">
+                Notre intelligence artificielle analyse vos factures localement et ne conserve aucune information personnelle ou commerciale.
+            </p>
+        </div>
+
+        <div class="info-section">
+            <div class="section-title">
+                🚀 Fonctionnalités Disponibles
+            </div>
+            <p class="info-text">
+                <strong>Extraction IA :</strong> Analyse automatique des factures PDF avec 99.8% de précision
+            </p>
+            <p class="info-text">
+                <strong>Classification Douanière :</strong> Codes SH automatiques pour vos déclarations (plans payants)
+            </p>
+            <p class="info-text">
+                <strong>Export Professionnel :</strong> Formats Excel et CSV optimisés pour vos besoins comptables
+            </p>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <a href="/dashboard" class="btn btn-primary">
+                📄 Traiter une Facture
+            </a>
+            <a href="/pricing" class="btn btn-secondary">
+                💎 Voir les Plans
+            </a>
+        </div>
+    </div>
+
+    <!-- Modal de modification du nom -->
+    <div id="nameModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Modifier le nom</h3>
+                <span class="close" onclick="closeModal('nameModal')">&times;</span>
+            </div>
+            <form id="nameForm">
+                <div class="form-group">
+                    <label class="form-label">Prénom</label>
+                    <input type="text" class="form-input" id="prenomInput" value="{{ user_data.prenom }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nom</label>
+                    <input type="text" class="form-input" id="nomInput" value="{{ user_data.nom }}" required>
+                </div>
+                <div id="nameMessages"></div>
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('nameModal')">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de modification du nom d'utilisateur -->
+    <div id="usernameModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Modifier le nom d'utilisateur</h3>
+                <span class="close" onclick="closeModal('usernameModal')">&times;</span>
+            </div>
+            <form id="usernameForm">
+                <div class="form-group">
+                    <label class="form-label">Nom d'utilisateur</label>
+                    <input type="text" class="form-input" id="usernameInput" value="{{ user_data.get('username', user_data.email.split('@')[0]) }}" required>
+                    <div id="usernameStatus" class="username-status"></div>
+                    <small style="color: #666;">3-20 caractères, lettres, chiffres, points et underscores uniquement</small>
+                </div>
+                <div id="usernameMessages"></div>
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary" id="saveUsernameBtn">Sauvegarder</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('usernameModal')">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de changement de photo de profil -->
+    <div id="photoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Changer la photo de profil</h3>
+                <span class="close" onclick="closeModal('photoModal')">&times;</span>
+            </div>
+            
+            <!-- Options d'upload de fichier -->
+            <div class="upload-section" style="margin-bottom: 2rem;">
+                <h4 style="color: #2E7D32; margin-bottom: 1rem;">📁 Importer depuis vos fichiers</h4>
+                <div class="file-upload-area" onclick="document.getElementById('profilePhotoInput').click()">
+                    <span>📸 Cliquez pour choisir une image</span>
+                    <small style="display: block; margin-top: 0.5rem; color: #666;">
+                        PNG, JPG, JPEG, WEBP • Max 5 MB
+                    </small>
+                </div>
+                <input type="file" id="profilePhotoInput" accept=".png,.jpg,.jpeg,.webp" style="display: none;" onchange="handlePhotoUpload(this)">
+            </div>
+            
+            <!-- Séparateur -->
+            <div style="text-align: center; margin: 2rem 0; color: #999; position: relative;">
+                <span style="background: white; padding: 0 1rem;">ou</span>
+                <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #ddd; z-index: -1;"></div>
+            </div>
+            
+            <!-- Options d'avatar automatiques -->
+            <div>
+                <h4 style="color: #2E7D32; margin-bottom: 1rem;">🎨 Choisir un avatar coloré</h4>
+                <div class="avatar-options" id="avatarOptions">
+                    <!-- Les options d'avatar seront générées dynamiquement -->
+                </div>
+            </div>
+            
+            <div id="photoMessages"></div>
+            <div class="actions">
+                <button type="button" class="btn btn-primary" onclick="generateNewAvatar()">Générer nouvel avatar</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('photoModal')">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let usernameCheckTimeout;
+
+        // Fonctions d'édition
+        function editName() {
+            document.getElementById('nameModal').style.display = 'block';
+        }
+
+        function editUsername() {
+            document.getElementById('usernameModal').style.display = 'block';
+        }
+
+        function changeProfilePhoto() {
+            generateAvatarOptions();
+            document.getElementById('photoModal').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Fermer modal en cliquant à l'extérieur
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Soumission formulaire nom
+        document.getElementById('nameForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const prenom = document.getElementById('prenomInput').value.trim();
+            const nom = document.getElementById('nomInput').value.trim();
+            
+            if (!prenom || !nom) {
+                showMessage('nameMessages', 'Prénom et nom requis', 'error');
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('prenom', prenom);
+                formData.append('nom', nom);
+                
+                const response = await fetch('/api/profile/update', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('displayName').textContent = `${prenom} ${nom}`;
+                    showMessage('nameMessages', 'Nom mis à jour avec succès !', 'success');
+                    setTimeout(() => {
+                        closeModal('nameModal');
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showMessage('nameMessages', result.message || 'Erreur de mise à jour', 'error');
+                }
+            } catch (error) {
+                showMessage('nameMessages', 'Erreur de connexion', 'error');
+            }
+        });
+
+        // Vérification nom d'utilisateur en temps réel
+        document.getElementById('usernameInput').addEventListener('input', function() {
+            clearTimeout(usernameCheckTimeout);
+            const username = this.value.trim().toLowerCase();
+            const statusDiv = document.getElementById('usernameStatus');
+            const saveBtn = document.getElementById('saveUsernameBtn');
+            
+            if (username.length < 3) {
+                statusDiv.innerHTML = '';
+                saveBtn.disabled = true;
+                return;
+            }
+            
+            // Validation format
+            const validFormat = /^[a-z0-9._]{3,20}$/.test(username);
+            if (!validFormat) {
+                statusDiv.innerHTML = '<span class="status-unavailable">Format invalide</span>';
+                saveBtn.disabled = true;
+                return;
+            }
+            
+            statusDiv.innerHTML = '<span style="color: #666;">⏳ Vérification...</span>';
+            saveBtn.disabled = true;
+            
+            usernameCheckTimeout = setTimeout(async () => {
+                try {
+                    const formData = new FormData();
+                    formData.append('username', username);
+                    
+                    const response = await fetch('/api/profile/username/check', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success && result.available) {
+                        statusDiv.innerHTML = '<span class="status-available">✓ Disponible</span>';
+                        saveBtn.disabled = false;
+                    } else {
+                        statusDiv.innerHTML = '<span class="status-unavailable">✗ Non disponible</span>';
+                        saveBtn.disabled = true;
+                    }
+                } catch (error) {
+                    statusDiv.innerHTML = '<span class="status-unavailable">Erreur de vérification</span>';
+                    saveBtn.disabled = true;
+                }
+            }, 500);
+        });
+
+        // Soumission formulaire nom d'utilisateur
+        document.getElementById('usernameForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('usernameInput').value.trim().toLowerCase();
+            
+            try {
+                const formData = new FormData();
+                formData.append('username', username);
+                
+                const response = await fetch('/api/profile/update', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('displayUsername').textContent = `@${username}`;
+                    showMessage('usernameMessages', 'Nom d\'utilisateur mis à jour !', 'success');
+                    setTimeout(() => {
+                        closeModal('usernameModal');
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showMessage('usernameMessages', result.message || 'Erreur de mise à jour', 'error');
+                }
+            } catch (error) {
+                showMessage('usernameMessages', 'Erreur de connexion', 'error');
+            }
+        });
+
+        function generateAvatarOptions() {
+            const options = document.getElementById('avatarOptions');
+            const colors = [
+                '#4CAF50', '#2196F3', '#FF9800', '#E91E63', '#9C27B0', 
+                '#FF5722', '#795548', '#607D8B', '#F44336', '#00BCD4'
+            ];
+            
+            const userInitials = '{{ user_data.prenom[0]|upper }}{{ user_data.nom[0]|upper }}';
+            
+            options.innerHTML = '';
+            colors.forEach((color, index) => {
+                const option = document.createElement('div');
+                option.className = 'avatar-option';
+                option.style.background = `linear-gradient(135deg, ${color}, ${color}dd)`;
+                option.textContent = userInitials;
+                option.onclick = () => selectAvatar(option, color);
+                options.appendChild(option);
+            });
+        }
+
+        function selectAvatar(element, color) {
+            document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            
+            // Sauvegarder immédiatement la sélection
+            updateAvatarColor(color);
+        }
+
+        async function updateAvatarColor(color) {
+            try {
+                const formData = new FormData();
+                formData.append('avatar_color', color);
+                
+                const response = await fetch('/api/profile/update', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('photoMessages', 'Avatar mis à jour !', 'success');
+                    setTimeout(() => {
+                        closeModal('photoModal');
+                        location.reload();
+                    }, 1000);
+                } else {
+                    showMessage('photoMessages', 'Erreur mise à jour avatar', 'error');
+                }
+            } catch (error) {
+                showMessage('photoMessages', 'Erreur de connexion', 'error');
+            }
+        }
+
+        function handlePhotoUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            // Validation de la taille (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                showMessage('photoMessages', 'Fichier trop volumineux (max 5MB)', 'error');
+                return;
+            }
+            
+            // Validation du type
+            const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                showMessage('photoMessages', 'Format non supporté. Utilisez PNG, JPG ou WEBP.', 'error');
+                return;
+            }
+            
+            // Upload du fichier
+            uploadProfilePhoto(file);
+        }
+
+        async function uploadProfilePhoto(file) {
+            try {
+                showMessage('photoMessages', 'Upload en cours...', 'success');
+                
+                const formData = new FormData();
+                formData.append('profile_photo', file);
+                
+                const response = await fetch('/api/profile/update', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('photoMessages', 'Photo mise à jour avec succès !', 'success');
+                    setTimeout(() => {
+                        closeModal('photoModal');
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showMessage('photoMessages', result.message || 'Erreur upload', 'error');
+                }
+            } catch (error) {
+                showMessage('photoMessages', 'Erreur upload photo', 'error');
+            }
+        }
+
+        async function generateNewAvatar() {
+            try {
+                const response = await fetch('/api/profile/avatar/generate', {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('photoMessages', 'Nouvel avatar généré !', 'success');
+                    setTimeout(() => {
+                        closeModal('photoModal');
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showMessage('photoMessages', 'Erreur génération avatar', 'error');
+                }
+            } catch (error) {
+                showMessage('photoMessages', 'Erreur de connexion', 'error');
+            }
+        }
+
+        function showMessage(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `${type}-message`;
+            messageDiv.textContent = message;
+            
+            container.innerHTML = '';
+            container.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

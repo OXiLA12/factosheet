@@ -1,0 +1,953 @@
+{% extends "base.html" %}
+
+{% block title %}Gestionnaire de Templates - FactoSheet{% endblock %}
+
+{% block extra_css %}
+<style>
+    .template-container {
+        padding: 2rem 0;
+    }
+
+    .template-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .template-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+    }
+
+    .template-tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 3rem;
+        background: var(--surface);
+        border-radius: 1rem;
+        padding: 0.5rem;
+        box-shadow: var(--shadow);
+    }
+
+    .template-tab {
+        padding: 1rem 2rem;
+        border-radius: 0.5rem;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+    .template-tab.active {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    }
+
+    .template-section {
+        display: none;
+    }
+
+    .template-section.active {
+        display: block;
+        animation: fadeInUp 0.3s ease-out;
+    }
+
+    .templates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .template-card {
+        background: var(--surface);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .template-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient);
+    }
+
+    .template-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .template-card.default::before {
+        background: linear-gradient(135deg, #2196F3, #64B5F6);
+    }
+
+    .template-card.custom::before {
+        background: linear-gradient(135deg, #FF9800, #FFB74D);
+    }
+
+    .template-card.suggested::before {
+        background: linear-gradient(135deg, #9C27B0, #BA68C8);
+    }
+
+    .template-header-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .template-type-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .template-type-badge.default {
+        background: rgba(33, 150, 243, 0.1);
+        color: #2196F3;
+    }
+
+    .template-type-badge.custom {
+        background: rgba(255, 152, 0, 0.1);
+        color: #FF9800;
+    }
+
+    .template-type-badge.suggested {
+        background: rgba(156, 39, 176, 0.1);
+        color: #9C27B0;
+    }
+
+    .template-name {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+
+    .template-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+    }
+
+    .template-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: rgba(76, 175, 80, 0.05);
+        border-radius: 0.75rem;
+    }
+
+    .template-stat {
+        text-align: center;
+    }
+
+    .template-stat-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .template-stat-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+    }
+
+    .template-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .template-actions .btn {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .create-template-section {
+        background: var(--surface);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        margin-bottom: 3rem;
+    }
+
+    .form-group {
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .form-input, .form-textarea, .form-select {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid var(--border-theme-color);
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        background: var(--bg-primary);
+        color: var(--text-theme-primary);
+        transition: border-color 0.3s ease;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+    }
+
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .pattern-builder {
+        background: rgba(76, 175, 80, 0.05);
+        border: 1px solid rgba(76, 175, 80, 0.2);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .pattern-field {
+        margin-bottom: 2rem;
+    }
+
+    .pattern-field:last-child {
+        margin-bottom: 0;
+    }
+
+    .pattern-field-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .pattern-field-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .pattern-list {
+        space-y: 0.5rem;
+    }
+
+    .pattern-item {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .pattern-input {
+        flex: 1;
+        padding: 0.75rem;
+        border: 1px solid var(--border-theme-color);
+        border-radius: 0.5rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        background: var(--bg-primary);
+        color: var(--text-theme-primary);
+    }
+
+    .suggestions-section {
+        background: linear-gradient(135deg, rgba(156, 39, 176, 0.05), rgba(186, 104, 200, 0.02));
+        border: 1px solid rgba(156, 39, 176, 0.2);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .suggestion-card {
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .suggestion-card:hover {
+        background: rgba(255, 255, 255, 0.95);
+        transform: translateX(5px);
+    }
+
+    .suggestion-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .suggestion-confidence {
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: rgba(76, 175, 80, 0.1);
+        color: #4CAF50;
+    }
+
+    .pattern-preview {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-top: 1rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .learning-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .learning-stat-card {
+        background: var(--surface);
+        padding: 1.5rem;
+        border-radius: 1rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+    }
+
+    .learning-stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .learning-stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .template-container {
+            padding: 1rem 0;
+        }
+        
+        .template-header h1 {
+            font-size: 2rem;
+        }
+        
+        .templates-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .template-tabs {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .template-actions {
+            flex-direction: column;
+        }
+        
+        .learning-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="template-container">
+        
+        <!-- En-tête -->
+        <div class="template-header fade-in-up">
+            <h1>Gestionnaire de Templates</h1>
+            <p style="color: var(--text-secondary); font-size: 1.1rem;">
+                Créez et gérez vos templates d'extraction personnalisés avec apprentissage intelligent
+            </p>
+        </div>
+
+        <!-- Onglets -->
+        <div class="template-tabs fade-in-up">
+            <button class="template-tab active" onclick="showSection('templates')">
+                📋 Mes Templates
+            </button>
+            <button class="template-tab" onclick="showSection('create')">
+                ➕ Créer Template
+            </button>
+            <button class="template-tab" onclick="showSection('suggestions')">
+                💡 Suggestions IA
+            </button>
+            <button class="template-tab" onclick="showSection('learning')">
+                🎓 Apprentissage
+            </button>
+        </div>
+
+        <!-- Section Templates existants -->
+        <div id="templatesSection" class="template-section active">
+            <div class="templates-grid" id="templatesGrid">
+                <!-- Les templates seront chargés ici -->
+                <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--text-secondary);">
+                    🔄 Chargement des templates...
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Création de template -->
+        <div id="createSection" class="template-section">
+            <div class="create-template-section fade-in-up">
+                <h3 style="margin-bottom: 2rem; color: var(--text-primary);">➕ Créer un Nouveau Template</h3>
+                
+                <form id="templateForm">
+                    <div class="form-group">
+                        <label class="form-label" for="templateName">Nom du template</label>
+                        <input type="text" id="templateName" class="form-input" placeholder="Ex: Factures Fournisseur ABC" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="templateDescription">Description</label>
+                        <textarea id="templateDescription" class="form-textarea" placeholder="Décrivez ce template et quand l'utiliser"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="templateType">Type de document</label>
+                        <select id="templateType" class="form-select">
+                            <option value="custom">Template personnalisé</option>
+                            <option value="facture">Facture commerciale</option>
+                            <option value="bon_commande">Bon de commande</option>
+                            <option value="recu_livraison">Reçu de livraison</option>
+                            <option value="autre">Autre document</option>
+                        </select>
+                    </div>
+                    
+                    <div class="pattern-builder">
+                        <h4 style="margin-bottom: 1.5rem; color: var(--text-primary);">🎯 Patterns d'Extraction</h4>
+                        
+                        <div class="pattern-field">
+                            <div class="pattern-field-header">
+                                <span class="pattern-field-name">Numéro de facture</span>
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="addPatternInput('numero_facture')">+ Ajouter pattern</button>
+                            </div>
+                            <div id="numero_facture_patterns" class="pattern-list">
+                                <div class="pattern-item">
+                                    <input type="text" class="pattern-input" placeholder="Ex: facture\s*n°?\s*:?\s*([A-Z0-9\-/]+)" value="facture\s*n°?\s*:?\s*([A-Z0-9\-/]+)">
+                                    <button type="button" class="btn btn-sm btn-outline" onclick="removePatternInput(this)">×</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="pattern-field">
+                            <div class="pattern-field-header">
+                                <span class="pattern-field-name">Date</span>
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="addPatternInput('date')">+ Ajouter pattern</button>
+                            </div>
+                            <div id="date_patterns" class="pattern-list">
+                                <div class="pattern-item">
+                                    <input type="text" class="pattern-input" placeholder="Ex: (\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})" value="(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})">
+                                    <button type="button" class="btn btn-sm btn-outline" onclick="removePatternInput(this)">×</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="pattern-field">
+                            <div class="pattern-field-header">
+                                <span class="pattern-field-name">Fournisseur</span>
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="addPatternInput('fournisseur')">+ Ajouter pattern</button>
+                            </div>
+                            <div id="fournisseur_patterns" class="pattern-list">
+                                <div class="pattern-item">
+                                    <input type="text" class="pattern-input" placeholder="Ex: ^([A-Z][a-zA-Z\s&\.\-]+(?:S\.A\.?|SARL|SAS)?)$">
+                                    <button type="button" class="btn btn-sm btn-outline" onclick="removePatternInput(this)">×</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="pattern-field">
+                            <div class="pattern-field-header">
+                                <span class="pattern-field-name">Montant total</span>
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="addPatternInput('montant_total')">+ Ajouter pattern</button>
+                            </div>
+                            <div id="montant_total_patterns" class="pattern-list">
+                                <div class="pattern-item">
+                                    <input type="text" class="pattern-input" placeholder="Ex: total\s*:?\s*([0-9\s,\.]+)\s*€?" value="total\s*:?\s*([0-9\s,\.]+)\s*€?">
+                                    <button type="button" class="btn btn-sm btn-outline" onclick="removePatternInput(this)">×</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 1.5rem;">
+                            <button type="button" class="btn btn-secondary" onclick="addCustomField()">+ Ajouter un champ personnalisé</button>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <button type="button" class="btn btn-secondary" onclick="previewTemplate()" style="margin-right: 1rem;">👁️ Prévisualiser</button>
+                        <button type="submit" class="btn btn-primary">✅ Créer le Template</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Section Suggestions IA -->
+        <div id="suggestionsSection" class="template-section">
+            <div class="suggestions-section fade-in-up">
+                <h3 style="margin-bottom: 2rem; color: var(--text-primary);">💡 Suggestions de Templates IA</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+                    L'IA analyse vos extractions pour suggérer des templates optimisés
+                </p>
+                
+                <div id="suggestionsContainer">
+                    <!-- Les suggestions seront chargées ici -->
+                    <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                        🔄 Analyse de vos extractions en cours...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Apprentissage -->
+        <div id="learningSection" class="template-section">
+            <div class="create-template-section fade-in-up">
+                <h3 style="margin-bottom: 2rem; color: var(--text-primary);">🎓 Apprentissage Automatique</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+                    Statistiques sur l'amélioration continue de vos templates grâce aux corrections
+                </p>
+                
+                <div class="learning-stats" id="learningStats">
+                    <div class="learning-stat-card">
+                        <div class="learning-stat-number" id="totalCorrections">0</div>
+                        <div class="learning-stat-label">Corrections apportées</div>
+                    </div>
+                    <div class="learning-stat-card">
+                        <div class="learning-stat-number" id="templatesImproved">0</div>
+                        <div class="learning-stat-label">Templates améliorés</div>
+                    </div>
+                    <div class="learning-stat-card">
+                        <div class="learning-stat-number" id="avgAccuracy">0%</div>
+                        <div class="learning-stat-label">Précision moyenne</div>
+                    </div>
+                    <div class="learning-stat-card">
+                        <div class="learning-stat-number" id="patternsLearned">0</div>
+                        <div class="learning-stat-label">Nouveaux patterns</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 3rem; text-align: center;">
+                    <button class="btn btn-primary" onclick="exportLearningData()">
+                        📊 Exporter Données d'Apprentissage
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentUser = null;
+    let templates = [];
+    let suggestions = [];
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Vérifier l'authentification
+        if (!{{ 'true' if user_authenticated else 'false' }}) {
+            window.location.href = '/auth';
+            return;
+        }
+        
+        currentUser = '{{ user_data.uid if user_data else "" }}';
+        loadTemplates();
+        loadSuggestions();
+        loadLearningStats();
+    });
+    
+    function showSection(sectionName) {
+        // Masquer toutes les sections
+        document.querySelectorAll('.template-section').forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Désactiver tous les onglets
+        document.querySelectorAll('.template-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Afficher la section demandée
+        document.getElementById(sectionName + 'Section').classList.add('active');
+        
+        // Activer l'onglet correspondant
+        event.target.classList.add('active');
+    }
+    
+    async function loadTemplates() {
+        try {
+            const response = await fetch('/api/templates/list');
+            if (!response.ok) throw new Error('Erreur chargement templates');
+            
+            templates = await response.json();
+            displayTemplates(templates);
+            
+        } catch (error) {
+            console.error('Erreur chargement templates:', error);
+            document.getElementById('templatesGrid').innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--error-color);">
+                    ❌ Erreur de chargement des templates
+                </div>
+            `;
+        }
+    }
+    
+    function displayTemplates(templatesList) {
+        const container = document.getElementById('templatesGrid');
+        
+        if (!templatesList || templatesList.length === 0) {
+            container.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--text-secondary);">
+                    📋 Aucun template disponible<br>
+                    <small>Créez votre premier template ci-dessus</small>
+                </div>
+            `;
+            return;
+        }
+        
+        const templatesHTML = templatesList.map(template => `
+            <div class="template-card ${template.type || 'custom'}">
+                <div class="template-header-card">
+                    <div>
+                        <div class="template-name">${template.name}</div>
+                        <div class="template-description">${template.description || 'Aucune description'}</div>
+                    </div>
+                    <div class="template-type-badge ${template.type || 'custom'}">
+                        ${template.is_default ? 'Défaut' : template.type || 'Custom'}
+                    </div>
+                </div>
+                
+                <div class="template-stats">
+                    <div class="template-stat">
+                        <div class="template-stat-value">${template.usage_count || 0}</div>
+                        <div class="template-stat-label">Utilisations</div>
+                    </div>
+                    <div class="template-stat">
+                        <div class="template-stat-value">${template.success_rate || 0}%</div>
+                        <div class="template-stat-label">Succès</div>
+                    </div>
+                    <div class="template-stat">
+                        <div class="template-stat-value">${formatDate(template.created_at)}</div>
+                        <div class="template-stat-label">Créé</div>
+                    </div>
+                </div>
+                
+                <div class="template-actions">
+                    <button class="btn btn-primary btn-sm" onclick="useTemplate('${template.template_id}')">
+                        🚀 Utiliser
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="editTemplate('${template.template_id}')">
+                        ✏️ Modifier
+                    </button>
+                    ${!template.is_default ? `
+                        <button class="btn btn-outline btn-sm" onclick="duplicateTemplate('${template.template_id}')">
+                            📋 Dupliquer
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('');
+        
+        container.innerHTML = templatesHTML;
+    }
+    
+    async function loadSuggestions() {
+        try {
+            const response = await fetch('/api/templates/suggestions');
+            if (!response.ok) throw new Error('Erreur chargement suggestions');
+            
+            suggestions = await response.json();
+            displaySuggestions(suggestions);
+            
+        } catch (error) {
+            console.error('Erreur chargement suggestions:', error);
+            document.getElementById('suggestionsContainer').innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: var(--error-color);">
+                    ❌ Erreur de chargement des suggestions
+                </div>
+            `;
+        }
+    }
+    
+    function displaySuggestions(suggestionsList) {
+        const container = document.getElementById('suggestionsContainer');
+        
+        if (!suggestionsList || suggestionsList.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                    💡 Aucune suggestion disponible<br>
+                    <small>Effectuez plus d'extractions pour que l'IA génère des suggestions</small>
+                </div>
+            `;
+            return;
+        }
+        
+        const suggestionsHTML = suggestionsList.map(suggestion => {
+            const templateData = suggestion.template_data;
+            return `
+                <div class="suggestion-card">
+                    <div class="suggestion-header">
+                        <div>
+                            <strong>${templateData.name}</strong>
+                            <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                                ${templateData.description}
+                            </div>
+                        </div>
+                        <div class="suggestion-confidence">
+                            ${Math.round(templateData.confidence_score * 100)}% confiance
+                        </div>
+                    </div>
+                    
+                    <div class="pattern-preview">
+                        <strong>Patterns détectés:</strong><br>
+                        ${Object.keys(templateData.patterns).map(field => 
+                            `• ${field}: ${templateData.patterns[field].length} pattern(s)`
+                        ).join('<br>')}
+                    </div>
+                    
+                    <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                        <button class="btn btn-primary btn-sm" onclick="acceptSuggestion('${suggestion.suggestion_id}')">
+                            ✅ Accepter
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="previewSuggestion('${suggestion.suggestion_id}')">
+                            👁️ Prévisualiser
+                        </button>
+                        <button class="btn btn-outline btn-sm" onclick="rejectSuggestion('${suggestion.suggestion_id}')">
+                            ❌ Rejeter
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        container.innerHTML = suggestionsHTML;
+    }
+    
+    async function loadLearningStats() {
+        try {
+            const response = await fetch('/api/templates/learning-stats');
+            if (!response.ok) throw new Error('Erreur chargement stats');
+            
+            const stats = await response.json();
+            
+            document.getElementById('totalCorrections').textContent = stats.total_corrections || 0;
+            document.getElementById('templatesImproved').textContent = stats.templates_improved || 0;
+            document.getElementById('avgAccuracy').textContent = `${Math.round(stats.avg_accuracy || 0)}%`;
+            document.getElementById('patternsLearned').textContent = stats.patterns_learned || 0;
+            
+        } catch (error) {
+            console.error('Erreur chargement stats apprentissage:', error);
+        }
+    }
+    
+    // Gestionnaire du formulaire de création
+    document.getElementById('templateForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await createTemplate();
+    });
+    
+    async function createTemplate() {
+        try {
+            const formData = new FormData(document.getElementById('templateForm'));
+            
+            // Collecter les patterns
+            const patterns = {};
+            document.querySelectorAll('.pattern-field').forEach(field => {
+                const fieldId = field.querySelector('[id$="_patterns"]').id.replace('_patterns', '');
+                const patternInputs = field.querySelectorAll('.pattern-input');
+                
+                patterns[fieldId] = Array.from(patternInputs)
+                    .map(input => input.value.trim())
+                    .filter(pattern => pattern.length > 0);
+            });
+            
+            const templateData = {
+                name: document.getElementById('templateName').value,
+                description: document.getElementById('templateDescription').value,
+                type: document.getElementById('templateType').value,
+                patterns: patterns
+            };
+            
+            const response = await fetch('/api/templates/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(templateData)
+            });
+            
+            if (!response.ok) throw new Error('Erreur création template');
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showNotification('✅ Template créé avec succès !', 'success');
+                document.getElementById('templateForm').reset();
+                loadTemplates();
+                showSection('templates');
+            } else {
+                throw new Error(result.message);
+            }
+            
+        } catch (error) {
+            console.error('Erreur création template:', error);
+            showNotification('❌ Erreur lors de la création', 'error');
+        }
+    }
+    
+    function addPatternInput(fieldName) {
+        const container = document.getElementById(fieldName + '_patterns');
+        const patternItem = document.createElement('div');
+        patternItem.className = 'pattern-item';
+        patternItem.innerHTML = `
+            <input type="text" class="pattern-input" placeholder="Nouveau pattern regex">
+            <button type="button" class="btn btn-sm btn-outline" onclick="removePatternInput(this)">×</button>
+        `;
+        container.appendChild(patternItem);
+    }
+    
+    function removePatternInput(button) {
+        button.parentElement.remove();
+    }
+    
+    function addCustomField() {
+        const fieldName = prompt('Nom du champ personnalisé:');
+        if (!fieldName) return;
+        
+        const fieldId = fieldName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+        
+        // Vérifier si le champ existe déjà
+        if (document.getElementById(fieldId + '_patterns')) {
+            alert('Ce champ existe déjà');
+            return;
+        }
+        
+        const patternBuilder = document.querySelector('.pattern-builder');
+        const fieldHtml = `
+            <div class="pattern-field">
+                <div class="pattern-field-header">
+                    <span class="pattern-field-name">${fieldName}</span>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="addPatternInput('${fieldId}')">+ Ajouter pattern</button>
+                </div>
+                <div id="${fieldId}_patterns" class="pattern-list">
+                    <div class="pattern-item">
+                        <input type="text" class="pattern-input" placeholder="Pattern regex pour ${fieldName}">
+                        <button type="button" class="btn btn-sm btn-outline" onclick="removePatternInput(this)">×</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Insérer avant le bouton d'ajout de champ personnalisé
+        const addButton = patternBuilder.querySelector('div[style*="text-align: center"]');
+        addButton.insertAdjacentHTML('beforebegin', fieldHtml);
+    }
+    
+    async function useTemplate(templateId) {
+        // Rediriger vers le dashboard avec le template sélectionné
+        sessionStorage.setItem('selectedTemplate', templateId);
+        window.location.href = '/dashboard?template=' + templateId;
+    }
+    
+    async function acceptSuggestion(suggestionId) {
+        try {
+            const response = await fetch('/api/templates/accept-suggestion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ suggestion_id: suggestionId })
+            });
+            
+            if (!response.ok) throw new Error('Erreur acceptation suggestion');
+            
+            showNotification('✅ Suggestion acceptée et template créé !', 'success');
+            loadTemplates();
+            loadSuggestions();
+            
+        } catch (error) {
+            console.error('Erreur acceptation suggestion:', error);
+            showNotification('❌ Erreur lors de l\'acceptation', 'error');
+        }
+    }
+    
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('fr-FR', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+    
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease-out;
+        `;
+        
+        if (type === 'success') notification.style.background = 'linear-gradient(135deg, #4CAF50, #81C784)';
+        else if (type === 'error') notification.style.background = 'linear-gradient(135deg, #F44336, #EF5350)';
+        else notification.style.background = 'linear-gradient(135deg, #2196F3, #64B5F6)';
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 4000);
+    }
+</script>
+{% endblock %}

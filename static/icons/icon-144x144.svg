@@ -1,0 +1,32 @@
+<svg width="144" height="144" viewBox="0 0 144 144" xmlns="http://www.w3.org/2000/svg">
+    <!-- Fond dégradé -->
+    <defs>
+        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#81C784;stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#2E7D32;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#4CAF50;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    
+    <!-- Fond principal -->
+    <rect width="144" height="144" rx="18" fill="url(#grad1)"/>
+    
+    <!-- Icône document -->
+    <g transform="translate(28.8,21.599999999999998)">
+        <rect width="86.39999999999999" height="100.8" rx="7" fill="white" fill-opacity="0.95"/>
+        <rect x="11.52" y="17.28" width="63.36" height="5" fill="url(#grad2)"/>
+        <rect x="11.52" y="28.8" width="50.4" height="4" fill="#666"/>
+        <rect x="11.52" y="37.44" width="57.6" height="4" fill="#666"/>
+        <rect x="11.52" y="46.08" width="43.199999999999996" height="4" fill="#666"/>
+        
+        <!-- Icône IA -->
+        <circle cx="64.8" cy="64.8" r="11.52" fill="url(#grad2)"/>
+        <text x="64.8" y="69.12" text-anchor="middle" fill="white" font-family="Arial" font-size="14" font-weight="bold">AI</text>
+    </g>
+    
+    <!-- Logo F -->
+    <text x="72.0" y="129.6" text-anchor="middle" fill="white" font-family="Arial" font-size="24" font-weight="bold">F</text>
+</svg>

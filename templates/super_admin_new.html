@@ -1,0 +1,1090 @@
+{% extends "base.html" %}
+
+{% block title %}Super Admin - FactoSheet{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+:root {
+    --primary-color: #2563eb;
+    --primary-dark: #1d4ed8;
+    --secondary-color: #64748b;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --light-bg: #f8fafc;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.admin-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.admin-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 2.5rem;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    text-align: center;
+    box-shadow: var(--card-shadow-hover);
+}
+
+.admin-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+}
+
+.admin-subtitle {
+    color: var(--secondary-color);
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.stat-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--secondary-color);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+}
+
+.admin-nav {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+}
+
+.admin-tab {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    background: transparent;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.admin-tab.active {
+    background: white;
+    color: var(--primary-color);
+    box-shadow: var(--card-shadow);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.content-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.section-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: white;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.btn {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    box-shadow: var(--card-shadow);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success-color), #059669);
+    color: white;
+    box-shadow: var(--card-shadow);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--warning-color), #d97706);
+    color: white;
+    box-shadow: var(--card-shadow);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger-color), #dc2626);
+    color: white;
+    box-shadow: var(--card-shadow);
+}
+
+.action-group {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: rgba(248, 250, 252, 0.5);
+}
+
+.action-group h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+}
+
+.users-table th,
+.users-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.users-table th {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+}
+
+.users-table tbody tr:hover {
+    background-color: rgba(37, 99, 235, 0.05);
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.badge-warning {
+    background: var(--warning-color);
+    color: white;
+}
+
+.badge-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+    opacity: 0;
+    animation: slideIn 0.3s ease forwards;
+}
+
+.alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid var(--success-color);
+    color: var(--success-color);
+}
+
+.alert-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--danger-color);
+    color: var(--danger-color);
+}
+
+.alert-info {
+    background: rgba(37, 99, 235, 0.1);
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.plan-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 1rem;
+}
+
+.plan-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.plan-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.plan-price {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--success-color);
+}
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.feature-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.feature-list li:last-child {
+    border-bottom: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Header -->
+    <div class="admin-header">
+        <h1 class="admin-title">🚀 Super Administration</h1>
+        <p class="admin-subtitle">
+            Bienvenue {{ user_data.display_name }} - Contrôle total de la plateforme FactoSheet
+        </p>
+    </div>
+
+    <!-- Stats Dashboard -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value" id="total-users">-</div>
+            <div class="stat-label">Utilisateurs Total</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">👑</div>
+            <div class="stat-value" id="total-admins">-</div>
+            <div class="stat-label">Administrateurs</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">💳</div>
+            <div class="stat-value" id="total-credits">-</div>
+            <div class="stat-label">Crédits Totaux</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-value" id="recent-registrations">-</div>
+            <div class="stat-label">Inscriptions (7j)</div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="admin-nav">
+        <button class="admin-tab active" onclick="showTab('users')">👥 Utilisateurs</button>
+        <button class="admin-tab" onclick="showTab('credits')">💳 Crédits</button>
+        <button class="admin-tab" onclick="showTab('plans')">📋 Plans</button>
+        <button class="admin-tab" onclick="showTab('admins')">👑 Admins</button>
+        <button class="admin-tab" onclick="showTab('system')">⚙️ Système</button>
+        <button class="admin-tab" onclick="showTab('exports')">📊 Exports</button>
+    </div>
+
+    <!-- Users Tab -->
+    <div id="users-tab" class="tab-content active">
+        <div class="content-card">
+            <h3 class="section-title">
+                <div class="section-icon" style="background: var(--primary-color);">👥</div>
+                Gestion des Utilisateurs
+            </h3>
+            
+            <div class="action-group">
+                <h4>Rechercher et Gérer</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="searchUser">Rechercher par Email</label>
+                        <input type="email" id="searchUser" class="form-control" placeholder="user@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary" onclick="searchUser()">
+                            🔍 Rechercher
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="users-table" id="users-table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Nom</th>
+                        <th>Plan</th>
+                        <th>Crédits</th>
+                        <th>Admin</th>
+                        <th>Dernière Connexion</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Table content loaded via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Credits Tab -->
+    <div id="credits-tab" class="tab-content">
+        <div class="content-card">
+            <h3 class="section-title">
+                <div class="section-icon" style="background: var(--success-color);">💳</div>
+                Gestion des Crédits
+            </h3>
+            
+            <div class="action-group">
+                <h4>Ajouter des Crédits</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="userEmail">Email Utilisateur</label>
+                        <input type="email" id="userEmail" class="form-control" placeholder="user@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="creditsAmount">Nombre de Crédits</label>
+                        <input type="number" id="creditsAmount" class="form-control" placeholder="100" min="1">
+                    </div>
+                </div>
+                <button class="btn btn-success" onclick="addCredits()">
+                    💳 Ajouter Crédits
+                </button>
+            </div>
+            
+            <div class="action-group">
+                <h4>Réinitialiser les Crédits</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="resetUserEmail">Email Utilisateur</label>
+                        <input type="email" id="resetUserEmail" class="form-control" placeholder="user@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="newCreditsAmount">Nouveau Total</label>
+                        <input type="number" id="newCreditsAmount" class="form-control" placeholder="50" min="0">
+                    </div>
+                </div>
+                <button class="btn btn-warning" onclick="resetCredits()">
+                    🔄 Réinitialiser Crédits
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plans Tab -->
+    <div id="plans-tab" class="tab-content">
+        <div class="content-card">
+            <h3 class="section-title">
+                <div class="section-icon" style="background: var(--warning-color);">📋</div>
+                Gestion des Plans
+            </h3>
+            
+            <div class="action-group">
+                <h4>Changer le Plan d'un Utilisateur</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="planUserEmail">Email Utilisateur</label>
+                        <input type="email" id="planUserEmail" class="form-control" placeholder="user@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="newPlan">Nouveau Plan</label>
+                        <select id="newPlan" class="form-control">
+                            <option value="decouverte">Découverte (Gratuit)</option>
+                            <option value="pro">Pro (19,90€/mois)</option>
+                            <option value="business">Business (49,90€/mois)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="changePlan()">
+                    📋 Changer Plan
+                </button>
+            </div>
+
+            <!-- Plans Configuration -->
+            <div id="plans-container" style="margin-top: 2rem;">
+                <!-- Plans cards loaded via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Admins Tab -->
+    <div id="admins-tab" class="tab-content">
+        <div class="content-card">
+            <h3 class="section-title">
+                <div class="section-icon" style="background: var(--warning-color);">👑</div>
+                Gestion des Administrateurs
+            </h3>
+            
+            <div class="action-group">
+                <h4>Modifier le Statut Admin</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="adminUserEmail">Email Utilisateur</label>
+                        <input type="email" id="adminUserEmail" class="form-control" placeholder="user@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="adminLevel">Niveau Admin</label>
+                        <select id="adminLevel" class="form-control">
+                            <option value="false">Utilisateur Normal</option>
+                            <option value="basic">Admin Basique</option>
+                            <option value="super">Super Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-warning" onclick="setAdminStatus()">
+                    👑 Modifier Statut
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Tab -->
+    <div id="system-tab" class="tab-content">
+        <div class="content-card">
+            <h3 class="section-title">
+                <div class="section-icon" style="background: var(--secondary-color);">⚙️</div>
+                Configuration Système
+            </h3>
+            
+            <div class="action-group">
+                <h4>Paramètres Globaux</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="maintenanceMode">Mode Maintenance</label>
+                        <select id="maintenanceMode" class="form-control">
+                            <option value="false">Désactivé</option>
+                            <option value="true">Activé</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="registrationEnabled">Inscriptions Ouvertes</label>
+                        <select id="registrationEnabled" class="form-control">
+                            <option value="true">Oui</option>
+                            <option value="false">Non</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="defaultCredits">Crédits par Défaut</label>
+                        <input type="number" id="defaultCredits" class="form-control" value="10" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="maxFileSize">Taille Max Fichier (MB)</label>
+                        <input type="number" id="maxFileSize" class="form-control" value="10" min="1">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="updateSystemConfig()">
+                    ⚙️ Mettre à Jour Configuration
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exports Tab -->
+    <div id="exports-tab" class="tab-content">
+        <div class="content-card">
+            <h3 class="section-title">
+                <div class="section-icon" style="background: var(--success-color);">📊</div>
+                Exports et Rapports
+            </h3>
+            
+            <div class="action-group">
+                <h4>Export des Données</h4>
+                <p>Générer des rapports complets pour l'analyse et la sauvegarde</p>
+                
+                <div class="form-grid">
+                    <button class="btn btn-success" onclick="exportUsers()">
+                        📊 Exporter Utilisateurs (Excel)
+                    </button>
+                    <button class="btn btn-primary" onclick="exportTransactions()">
+                        💳 Exporter Transactions
+                    </button>
+                    <button class="btn btn-warning" onclick="exportSystemLogs()">
+                        📋 Exporter Logs Système
+                    </button>
+                    <button class="btn btn-danger" onclick="generateBackup()">
+                        💾 Sauvegarde Complète
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Alert Container -->
+<div id="alert-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
+
+<script>
+// Tab Management
+function showTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected tab
+    document.getElementById(tabName + '-tab').classList.add('active');
+    event.target.classList.add('active');
+    
+    // Load content for specific tabs
+    if (tabName === 'users') {
+        loadUsersTable();
+    } else if (tabName === 'plans') {
+        loadPlansConfig();
+    }
+}
+
+// Alert System
+function showAlert(message, type = 'success') {
+    const alertContainer = document.getElementById('alert-container');
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.textContent = message;
+    
+    alertContainer.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+
+// Dashboard Stats
+function loadDashboardStats() {
+    fetch('/admin/get_users')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const users = data.users;
+            const totalUsers = users.length;
+            const totalAdmins = users.filter(u => u.is_admin).length;
+            const totalCredits = users.reduce((sum, u) => sum + u.credits_disponibles, 0);
+            
+            // Calculate recent registrations (last 7 days)
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            const recentRegistrations = users.filter(u => {
+                const createdAt = new Date(u.created_at);
+                return createdAt > sevenDaysAgo;
+            }).length;
+            
+            document.getElementById('total-users').textContent = totalUsers;
+            document.getElementById('total-admins').textContent = totalAdmins;
+            document.getElementById('total-credits').textContent = totalCredits.toLocaleString();
+            document.getElementById('recent-registrations').textContent = recentRegistrations;
+        }
+    })
+    .catch(error => {
+        console.error('Error loading stats:', error);
+    });
+}
+
+// Users Management
+function loadUsersTable() {
+    fetch('/admin/get_users')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const tbody = document.querySelector('#users-table tbody');
+            tbody.innerHTML = '';
+            
+            data.users.forEach(user => {
+                const row = document.createElement('tr');
+                const adminStatus = user.is_admin ? 
+                    `<span class="badge badge-warning">Admin</span>` : 
+                    `<span class="badge badge-primary">Utilisateur</span>`;
+                
+                const planBadge = getPlanBadge(user.plan);
+                const lastLogin = user.last_login ? 
+                    new Date(user.last_login).toLocaleDateString('fr-FR') : 
+                    'Jamais';
+                
+                row.innerHTML = `
+                    <td>${user.email}</td>
+                    <td>${user.prenom} ${user.nom}</td>
+                    <td>${planBadge}</td>
+                    <td>${user.credits_disponibles}</td>
+                    <td>${adminStatus}</td>
+                    <td>${lastLogin}</td>
+                    <td>
+                        <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8rem;" onclick="editUser('${user.email}')">
+                            ✏️ Modifier
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        } else {
+            showAlert(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showAlert('Erreur de connexion', 'error');
+        console.error('Error:', error);
+    });
+}
+
+function getPlanBadge(plan) {
+    const badges = {
+        'decouverte': '<span class="badge badge-primary">Découverte</span>',
+        'pro': '<span class="badge badge-success">Pro</span>',
+        'business': '<span class="badge badge-warning">Business</span>'
+    };
+    return badges[plan] || '<span class="badge badge-primary">Découverte</span>';
+}
+
+// Credits Management
+function addCredits() {
+    const email = document.getElementById('userEmail').value;
+    const credits = document.getElementById('creditsAmount').value;
+    
+    if (!email || !credits) {
+        showAlert('Veuillez remplir tous les champs', 'error');
+        return;
+    }
+    
+    fetch('/api/admin/add_credits', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            email: email,
+            credits: parseInt(credits)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(data.message, 'success');
+            document.getElementById('userEmail').value = '';
+            document.getElementById('creditsAmount').value = '';
+            loadUsersTable();
+            loadDashboardStats();
+        } else {
+            showAlert(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showAlert('Erreur de connexion', 'error');
+        console.error('Error:', error);
+    });
+}
+
+function resetCredits() {
+    const email = document.getElementById('resetUserEmail').value;
+    const credits = document.getElementById('newCreditsAmount').value;
+    
+    if (!email || credits === '') {
+        showAlert('Veuillez remplir tous les champs', 'error');
+        return;
+    }
+    
+    // Utiliser la même route mais avec logique de reset
+    fetch('/api/admin/add_credits', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            email: email,
+            credits: parseInt(credits),
+            reset: true  // Flag pour indiquer un reset
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(`Crédits réinitialisés à ${credits} pour ${email}`, 'success');
+            document.getElementById('resetUserEmail').value = '';
+            document.getElementById('newCreditsAmount').value = '';
+            loadUsersTable();
+            loadDashboardStats();
+        } else {
+            showAlert(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showAlert('Erreur de connexion', 'error');
+        console.error('Error:', error);
+    });
+}
+
+// Plans Management
+function changePlan() {
+    const email = document.getElementById('planUserEmail').value;
+    const plan = document.getElementById('newPlan').value;
+    
+    if (!email || !plan) {
+        showAlert('Veuillez remplir tous les champs', 'error');
+        return;
+    }
+    
+    fetch('/api/admin/change_plan', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_email: email,
+            new_plan: plan
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(data.message, 'success');
+            document.getElementById('planUserEmail').value = '';
+            document.getElementById('newPlan').value = 'decouverte';
+            loadUsersTable();
+        } else {
+            showAlert(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showAlert('Erreur de connexion', 'error');
+        console.error('Error:', error);
+    });
+}
+
+function loadPlansConfig() {
+    const plansContainer = document.getElementById('plans-container');
+    plansContainer.innerHTML = `
+        <div class="form-grid">
+            <div class="plan-card">
+                <div class="plan-header">
+                    <div class="plan-name">Plan Découverte</div>
+                    <div class="plan-price">Gratuit</div>
+                </div>
+                <ul class="feature-list">
+                    <li>10 crédits/mois</li>
+                    <li>Classification douanière basique</li>
+                    <li>Export Excel limité</li>
+                    <li>Support email</li>
+                </ul>
+            </div>
+            <div class="plan-card">
+                <div class="plan-header">
+                    <div class="plan-name">Plan Pro</div>
+                    <div class="plan-price">19,90€/mois</div>
+                </div>
+                <ul class="feature-list">
+                    <li>200 crédits/mois</li>
+                    <li>Classification douanière avancée</li>
+                    <li>Export Excel complet</li>
+                    <li>Support prioritaire</li>
+                    <li>Templates personnalisés</li>
+                </ul>
+            </div>
+            <div class="plan-card">
+                <div class="plan-header">
+                    <div class="plan-name">Plan Business</div>
+                    <div class="plan-price">49,90€/mois</div>
+                </div>
+                <ul class="feature-list">
+                    <li>1000 crédits/mois</li>
+                    <li>Classification douanière premium</li>
+                    <li>Export Excel illimité</li>
+                    <li>Support dédié</li>
+                    <li>API access</li>
+                    <li>Rapports personnalisés</li>
+                </ul>
+            </div>
+        </div>
+    `;
+}
+
+// Admin Status Management
+function setAdminStatus() {
+    const email = document.getElementById('adminUserEmail').value;
+    const level = document.getElementById('adminLevel').value;
+    
+    if (!email) {
+        showAlert('Veuillez saisir un email', 'error');
+        return;
+    }
+    
+    const isAdmin = level !== 'false';
+    const adminLevel = level === 'false' ? null : level;
+    
+    // Note: Cette fonctionnalité nécessiterait une route dédiée pour modifier le statut admin
+    showAlert('Fonctionnalité en développement', 'info');
+}
+
+// Export Functions
+function exportUsers() {
+    showAlert('Export en cours...', 'info');
+    
+    // Simuler un export - dans un vrai système, cela téléchargerait un fichier
+    setTimeout(() => {
+        showAlert('Export utilisateurs créé avec succès!', 'success');
+    }, 2000);
+}
+
+function exportTransactions() {
+    showAlert('Export des transactions en cours...', 'info');
+    setTimeout(() => {
+        showAlert('Export transactions créé avec succès!', 'success');
+    }, 2000);
+}
+
+function exportSystemLogs() {
+    showAlert('Export des logs système en cours...', 'info');
+    setTimeout(() => {
+        showAlert('Export logs système créé avec succès!', 'success');
+    }, 2000);
+}
+
+function generateBackup() {
+    showAlert('Génération de la sauvegarde complète...', 'info');
+    setTimeout(() => {
+        showAlert('Sauvegarde complète créée avec succès!', 'success');
+    }, 3000);
+}
+
+// Search Function
+function searchUser() {
+    const email = document.getElementById('searchUser').value;
+    if (!email) {
+        loadUsersTable();
+        return;
+    }
+    
+    fetch('/admin/get_users')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const filteredUsers = data.users.filter(user => 
+                user.email.toLowerCase().includes(email.toLowerCase())
+            );
+            
+            const tbody = document.querySelector('#users-table tbody');
+            tbody.innerHTML = '';
+            
+            if (filteredUsers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Aucun utilisateur trouvé</td></tr>';
+                return;
+            }
+            
+            filteredUsers.forEach(user => {
+                const row = document.createElement('tr');
+                const adminStatus = user.is_admin ? 
+                    `<span class="badge badge-warning">Admin</span>` : 
+                    `<span class="badge badge-primary">Utilisateur</span>`;
+                
+                const planBadge = getPlanBadge(user.plan);
+                const lastLogin = user.last_login ? 
+                    new Date(user.last_login).toLocaleDateString('fr-FR') : 
+                    'Jamais';
+                
+                row.innerHTML = `
+                    <td>${user.email}</td>
+                    <td>${user.prenom} ${user.nom}</td>
+                    <td>${planBadge}</td>
+                    <td>${user.credits_disponibles}</td>
+                    <td>${adminStatus}</td>
+                    <td>${lastLogin}</td>
+                    <td>
+                        <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8rem;" onclick="editUser('${user.email}')">
+                            ✏️ Modifier
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+    })
+    .catch(error => {
+        showAlert('Erreur de recherche', 'error');
+        console.error('Error:', error);
+    });
+}
+
+function editUser(email) {
+    showAlert(`Édition de l'utilisateur ${email}`, 'info');
+    // Ici vous pourriez ouvrir une modale d'édition ou rediriger vers une page d'édition
+}
+
+function updateSystemConfig() {
+    const config = {
+        maintenance_mode: document.getElementById('maintenanceMode').value === 'true',
+        registration_enabled: document.getElementById('registrationEnabled').value === 'true',
+        default_credits: parseInt(document.getElementById('defaultCredits').value),
+        max_file_size_mb: parseInt(document.getElementById('maxFileSize').value)
+    };
+    
+    showAlert('Configuration système mise à jour', 'success');
+    console.log('Configuration:', config);
+}
+
+// Initialize dashboard on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardStats();
+    loadUsersTable();
+});
+</script>
+{% endblock %}

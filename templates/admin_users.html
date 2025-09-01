@@ -1,0 +1,393 @@
+{% extends "admin_simple.html" %}
+
+{% block content %}
+<div class="admin-header">
+    <h1 class="admin-title">Administration FactoSheet</h1>
+    <p class="admin-subtitle">{{ user_data.email }} • Super Administrateur</p>
+</div>
+
+<nav class="admin-nav">
+    <a href="/admin/dashboard" class="nav-tab">📊 Dashboard</a>
+    <a href="/admin/users" class="nav-tab active">👥 Utilisateurs</a>
+    <a href="/admin/credits" class="nav-tab">🪙 Crédits</a>
+    <a href="/admin/system" class="nav-tab">⚙️ Système</a>
+</nav>
+
+<div class="admin-content">
+    <div class="page-header">
+        <h2>Gestion des Utilisateurs</h2>
+        <p>Modifier les plans, voir les détails et gérer les comptes utilisateur</p>
+    </div>
+
+    <div class="section-card">
+        <h3>Modifier le plan d'un utilisateur</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Adresse email</label>
+                <input type="email" id="user-email" placeholder="utilisateur@exemple.com">
+            </div>
+            <div class="form-group">
+                <label>Nouveau plan</label>
+                <select id="user-plan">
+                    <option value="decouverte">Plan Découverte</option>
+                    <option value="pro">Plan Pro</option>
+                    <option value="business">Plan Business</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary" onclick="changeUserPlan()">
+                    Changer le plan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-header">
+            <h3>Liste des utilisateurs</h3>
+            <button class="btn btn-outline" onclick="loadUsers()">
+                🔄 Actualiser
+            </button>
+        </div>
+        
+        <div class="table-container">
+            <table class="data-table" id="users-table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Plan</th>
+                        <th>Crédits</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-gray);">
+                            Chargement des utilisateurs...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="danger-section">
+        <h3>⚠️ Suppression de compte</h3>
+        <p>Supprimer définitivement un compte utilisateur (action irréversible)</p>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Email du compte à supprimer</label>
+                <input type="email" id="delete-email" placeholder="utilisateur@supprimer.com">
+            </div>
+            <div class="form-group">
+                <button class="btn btn-danger" onclick="deleteUser()" id="delete-btn">
+                    🗑️ Supprimer le compte
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.admin-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-dark);
+}
+
+.page-header p {
+    color: var(--text-gray);
+    margin: 0;
+}
+
+.section-card {
+    background: white;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.section-card h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-header h3 {
+    margin: 0;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.form-group input,
+.form-group select {
+    padding: 0.75rem;
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.table-container {
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.data-table th {
+    background: #F9FAFB;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.data-table tr:hover {
+    background: #F9FAFB;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-admin { background: #DBEAFE; color: #1E40AF; }
+.status-super { background: #EDE9FE; color: #7C3AED; }
+.status-user { background: #D1FAE5; color: #065F46; }
+
+.danger-section {
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.danger-section h3 {
+    color: var(--danger-color);
+    margin: 0 0 0.5rem 0;
+}
+
+.danger-section p {
+    color: #991B1B;
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+}
+
+.btn-outline {
+    background: white;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.btn-outline:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+</style>
+
+<script>
+function changeUserPlan() {
+    const email = document.getElementById('user-email').value.trim();
+    const plan = document.getElementById('user-plan').value;
+    
+    if (!email) {
+        alert('Veuillez saisir un email');
+        return;
+    }
+    
+    fetch('/admin/super/change-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, plan: plan })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Plan changé vers ${plan} pour ${email}`);
+            document.getElementById('user-email').value = '';
+            loadUsers();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erreur de connexion');
+        console.error('Error:', error);
+    });
+}
+
+function loadUsers() {
+    fetch('/admin/get_users')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const tbody = document.querySelector('#users-table tbody');
+            tbody.innerHTML = '';
+            
+            data.users.forEach(user => {
+                const row = document.createElement('tr');
+                
+                const statusBadge = user.is_admin ? 
+                    (user.admin_level === 'super_admin' ? '<span class="status-badge status-super">Super Admin</span>' :
+                     '<span class="status-badge status-admin">Admin</span>') :
+                    '<span class="status-badge status-user">Utilisateur</span>';
+                
+                row.innerHTML = `
+                    <td>${user.email}</td>
+                    <td><strong>${user.plan || 'decouverte'}</strong></td>
+                    <td>${user.credits_disponibles || 0}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="confirmDelete('${user.uid}', '${user.email}')" 
+                                style="padding: 0.5rem 1rem; font-size: 0.8rem;">
+                            🗑️
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function deleteUser() {
+    const email = document.getElementById('delete-email').value.trim();
+    if (!email) {
+        alert('Veuillez saisir un email');
+        return;
+    }
+    confirmDelete(null, email);
+}
+
+function confirmDelete(userId, email) {
+    if (confirm(`Supprimer définitivement le compte de ${email}?\n\nTaper "SUPPRIMER" pour confirmer`)) {
+        const confirmation = prompt('Pour confirmer, tapez: SUPPRIMER');
+        if (confirmation === 'SUPPRIMER') {
+            performDelete(userId, email);
+        }
+    }
+}
+
+function performDelete(userId, email) {
+    const deleteBtn = document.getElementById('delete-btn');
+    deleteBtn.innerHTML = '⏳ Suppression...';
+    deleteBtn.disabled = true;
+    
+    if (!userId) {
+        fetch('/admin/get_users')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const user = data.users.find(u => u.email === email);
+                if (user) {
+                    executeDelete(user.uid, email);
+                } else {
+                    alert(`Utilisateur ${email} non trouvé`);
+                    resetDeleteButton();
+                }
+            }
+        });
+    } else {
+        executeDelete(userId, email);
+    }
+    
+    function executeDelete(uid, userEmail) {
+        fetch('/admin/delete_user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: uid, email: userEmail, confirm: true })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Compte ${userEmail} supprimé`);
+                document.getElementById('delete-email').value = '';
+                loadUsers();
+            } else {
+                alert(`Erreur: ${data.message}`);
+            }
+        })
+        .finally(() => resetDeleteButton());
+    }
+    
+    function resetDeleteButton() {
+        deleteBtn.innerHTML = '🗑️ Supprimer le compte';
+        deleteBtn.disabled = false;
+    }
+}
+
+// Charger les utilisateurs au démarrage
+document.addEventListener('DOMContentLoaded', loadUsers);
+</script>
+{% endblock %}

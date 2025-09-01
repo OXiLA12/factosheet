@@ -1,0 +1,606 @@
+{% extends "base.html" %}
+
+{% block title %}Mon Compte - FactoSheet{% endblock %}
+
+{% block extra_css %}
+<style>
+    .account-container {
+        padding: 2rem 0;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .account-header {
+        background: var(--surface);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .account-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .account-avatar-img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .account-avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        background: var(--gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
+
+    .account-info h1 {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+
+    .account-info p {
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+    }
+
+    .account-stats {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .stat-item {
+        background: rgba(76, 175, 80, 0.1);
+        padding: 0.75rem 1.25rem;
+        border-radius: 2rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--primary-color);
+    }
+
+    .account-tabs {
+        display: flex;
+        border-bottom: 2px solid var(--border-color);
+        margin-bottom: 2rem;
+        background: var(--surface);
+        border-radius: 1rem 1rem 0 0;
+        padding: 0 2rem;
+    }
+
+    .account-tab {
+        padding: 1.25rem 2rem;
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--text-secondary);
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .account-tab.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+    }
+
+    .account-tab:hover {
+        color: var(--primary-color);
+    }
+
+    .tab-content {
+        display: none;
+        background: var(--surface);
+        border-radius: 0 0 1rem 1rem;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+    }
+
+    .tab-content.active {
+        display: block;
+        animation: fadeInUp 0.4s ease-out;
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+    }
+
+    .form-section h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .usage-chart {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        border: 1px solid var(--border-color);
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-ring {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 1rem;
+        position: relative;
+    }
+
+    .progress-ring svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+
+    .progress-ring circle {
+        fill: none;
+        stroke-width: 8;
+    }
+
+    .progress-ring .background {
+        stroke: #e0e0e0;
+    }
+
+    .progress-ring .progress {
+        stroke: var(--primary-color);
+        stroke-linecap: round;
+        stroke-dasharray: 314;
+        stroke-dashoffset: 314;
+        animation: progress-animate 1s ease-out forwards;
+    }
+
+    @keyframes progress-animate {
+        to {
+            stroke-dashoffset: calc(314 - (314 * var(--progress, 0)) / 100);
+        }
+    }
+
+    .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .plan-upgrade {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .plan-upgrade h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+
+    .history-table th,
+    .history-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .history-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .history-table tbody tr:hover {
+        background: rgba(76, 175, 80, 0.05);
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .status-success {
+        background: rgba(76, 175, 80, 0.1);
+        color: var(--primary-color);
+    }
+    
+    .status-completed {
+        background: rgba(76, 175, 80, 0.1);
+        color: var(--primary-color);
+    }
+    
+    .status-error {
+        background: rgba(244, 67, 54, 0.1);
+        color: #f44336;
+    }
+    
+    .status-pending {
+        background: rgba(255, 193, 7, 0.1);
+        color: #ff9800;
+    }
+
+    .status-error {
+        background: rgba(244, 67, 54, 0.1);
+        color: #f44336;
+    }
+
+    @media (max-width: 768px) {
+        .account-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .account-tabs {
+            flex-direction: column;
+            padding: 0;
+        }
+        
+        .account-tab {
+            border-bottom: 1px solid var(--border-color);
+            border-left: 3px solid transparent;
+        }
+        
+        .account-tab.active {
+            border-left-color: var(--primary-color);
+            border-bottom-color: var(--border-color);
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container account-container">
+    <!-- Header du compte -->
+    <div class="account-header fade-in-up">
+        <div class="account-avatar">
+            {% if user_data.photo_url %}
+                <img src="{{ user_data.photo_url }}" alt="Profile" class="account-avatar-img">
+            {% else %}
+                <div class="account-avatar-placeholder">
+                    {{ user_data.prenom[0]|upper }}{{ user_data.nom[0]|upper }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="account-info">
+            <h1>{{ user_data.prenom }} {{ user_data.nom }}</h1>
+            <p>{{ user_data.email }}</p>
+            <div class="account-stats">
+                <div class="stat-item">Plan {{ user_data.plan|default('Découverte')|title }}</div>
+                <div class="stat-item">{{ user_data.credits_disponibles|default(10) }} crédits restants</div>
+                <div class="stat-item">{{ user_data.credits_utilises|default(0) }} factures traitées</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onglets -->
+    <div class="account-tabs fade-in-up">
+        <div class="account-tab active" onclick="switchAccountTab('profile')">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+            </svg>
+            Profil
+        </div>
+        <div class="account-tab" onclick="switchAccountTab('usage')">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M16,11.78L20.24,4.45L21.97,5.45L16.74,14.5L10.23,10.75L5.46,19H22V21H2V3H4V17.54L9.5,8L16,11.78Z"/>
+            </svg>
+            Utilisation
+        </div>
+        <div class="account-tab" onclick="switchAccountTab('subscription')">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M17,8.5C17,7.12 15.88,6 14.5,6C13.12,6 12,7.12 12,8.5C12,9.88 13.12,11 14.5,11C15.88,11 17,9.88 17,8.5M8,19H16V17.5C16,15.5 14.5,14 12.5,14H10.5C8.5,14 7,15.5 7,17.5V19H8Z"/>
+            </svg>
+            Abonnement
+        </div>
+        <div class="account-tab" onclick="switchAccountTab('history')">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M13.5,8H12V13L16.28,15.54L17,14.33L13.5,12.25V8M13,3A9,9 0 0,0 4,12H1L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3"/>
+            </svg>
+            Historique
+        </div>
+    </div>
+
+    <!-- Contenu des onglets -->
+    <div class="tab-content active" id="profile">
+        <div class="form-section">
+            <h3>
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+                </svg>
+                Informations personnelles
+            </h3>
+            <form class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Prénom</label>
+                    <input type="text" class="form-input" value="{{ user_data.prenom }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nom</label>
+                    <input type="text" class="form-input" value="{{ user_data.nom }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" value="{{ user_data.email }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Type de compte</label>
+                    <input type="text" class="form-input" value="{% if user_data.google_auth %}Google OAuth{% else %}Email/Password{% endif %}" readonly>
+                </div>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h3>
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z"/>
+                </svg>
+                Sécurité
+            </h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                {% if user_data.google_auth %}
+                Votre compte est sécurisé par Google OAuth. Vous pouvez gérer vos paramètres de sécurité directement dans votre compte Google.
+                {% else %}
+                Votre compte utilise une authentification par email et mot de passe sécurisés.
+                {% endif %}
+            </p>
+            {% if not user_data.google_auth %}
+                <button class="btn btn-secondary">Changer le mot de passe</button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="tab-content" id="usage">
+        <div class="usage-chart">
+            <h3 style="text-align: center; margin-bottom: 1.5rem;">Utilisation des crédits ce mois</h3>
+            <div class="progress-ring" style="--progress: {{ (user_data.credits_utilises|default(0) / (user_data.credits_utilises|default(0) + user_data.credits_disponibles|default(10)) * 100)|round }}">
+                <svg>
+                    <circle class="background" cx="60" cy="60" r="50"></circle>
+                    <circle class="progress" cx="60" cy="60" r="50"></circle>
+                </svg>
+                <div class="progress-text">
+                    <div style="font-size: 1.5rem;">{{ user_data.credits_utilises|default(0) }}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">utilisés</div>
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <p><strong>{{ user_data.credits_disponibles|default(10) }}</strong> crédits restants sur votre plan {{ user_data.plan|default('Découverte')|title }}</p>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Statistiques d'utilisation</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div class="card" style="text-align: center; padding: 1.5rem;">
+                    <div style="font-size: 2rem; font-weight: 700; color: var(--primary-color); margin-bottom: 0.5rem;">
+                        {{ user_data.credits_utilises|default(0) }}
+                    </div>
+                    <div style="color: var(--text-secondary);">Factures traitées</div>
+                </div>
+                <div class="card" style="text-align: center; padding: 1.5rem;">
+                    <div style="font-size: 2rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.5rem;">
+                        99.8%
+                    </div>
+                    <div style="color: var(--text-secondary);">Taux de réussite</div>
+                </div>
+                <div class="card" style="text-align: center; padding: 1.5rem;">
+                    <div style="font-size: 2rem; font-weight: 700; color: var(--secondary-color); margin-bottom: 0.5rem;">
+                        2.3s
+                    </div>
+                    <div style="color: var(--text-secondary);">Temps moyen</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="subscription">
+        <div class="plan-upgrade">
+            <h3>Plan actuel : {{ user_data.plan|default('Découverte')|title }}</h3>
+            <p>{{ user_data.credits_disponibles|default(10) }} crédits disponibles ce mois</p>
+            {% if user_data.plan == 'decouverte' %}
+                <a href="{{ url_for('pricing') }}" class="btn" style="background: white; color: var(--primary-color); margin-top: 1rem;">
+                    Passer au plan Pro
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="form-section">
+            <h3>Historique des paiements</h3>
+            <p style="color: var(--text-secondary);">Aucun paiement enregistré - Plan gratuit actuel</p>
+        </div>
+
+        <div class="form-section">
+            <h3>Gestion de l'abonnement</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                Consultez tous nos plans et choisissez celui qui convient le mieux à vos besoins.
+            </p>
+            <a href="{{ url_for('pricing') }}" class="btn btn-primary">Voir tous les plans</a>
+        </div>
+    </div>
+
+    <div class="tab-content" id="history">
+        {% if firebase_status %}
+        <div class="form-section" style="margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; padding: 0.75rem; border-radius: 0.5rem; background: {% if firebase_status.connected %}rgba(76, 175, 80, 0.1){% else %}rgba(244, 67, 54, 0.1){% endif %};">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: {% if firebase_status.connected %}var(--primary-color){% else %}#f44336{% endif %}; margin-right: 0.5rem;"></div>
+                <span style="font-size: 0.9rem; color: {% if firebase_status.connected %}var(--primary-color){% else %}#f44336{% endif %};">
+                    {% if firebase_status.connected %}
+                        🔥 Firebase connecté - {{ firebase_status.message }}
+                    {% else %}
+                        ⚠️ {{ firebase_status.message }}
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="form-section">
+            <h3>Historique des extractions (Firebase)</h3>
+            {% if extraction_history %}
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Fichier</th>
+                            <th>Pages</th>
+                            <th>Produits</th>
+                            <th>Fournisseurs</th>
+                            <th>Crédits</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for extraction in extraction_history %}
+                        <tr>
+                            <td>
+                                {% if extraction.get('date') %}
+                                    {{ extraction.date[:10] }} {{ extraction.date[11:16] }}
+                                {% elif extraction.get('created_at') %}
+                                    {% set date_parts = extraction.created_at.split('T') %}
+                                    {% set date = date_parts[0] %}
+                                    {% set time = date_parts[1][:5] if date_parts|length > 1 else '' %}
+                                    {{ date }} {{ time }}
+                                {% else %}
+                                    Date inconnue
+                                {% endif %}
+                            </td>
+                            <td title="{{ extraction.filename }}">
+                                {% if extraction.filename|length > 30 %}
+                                    {{ extraction.filename[:30] }}...
+                                {% else %}
+                                    {{ extraction.filename }}
+                                {% endif %}
+                            </td>
+                            <td>{{ extraction.nb_pages|default(0) }}</td>
+                            <td>{{ extraction.nb_produits|default(0) }}</td>
+                            <td>{{ extraction.nb_fournisseurs|default(0) }}</td>
+                            <td>{{ extraction.credits_consumed|default(0) }}</td>
+                            <td>
+                                <span class="status-badge status-success">
+                                    Réussie
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                    <svg width="64" height="64" fill="currentColor" viewBox="0 0 24 24" style="margin-bottom: 1rem; opacity: 0.5;">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                    <p>Aucune extraction effectuée pour le moment</p>
+                    <a href="{{ url_for('auto_login') }}#history" class="btn btn-secondary" style="margin-top: 1rem;">
+                        Actualiser l'historique
+                    </a>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary" style="margin-top: 1rem; margin-left: 1rem;">
+                        Traiter ma première facture
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function switchAccountTab(tabName) {
+        // Masquer tous les contenus
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // Désactiver tous les onglets
+        document.querySelectorAll('.account-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Activer l'onglet et le contenu sélectionnés
+        document.getElementById(tabName).classList.add('active');
+        
+        // Trouver l'onglet correspondant et l'activer
+        document.querySelectorAll('.account-tab').forEach(tab => {
+            const tabText = tab.textContent.trim().toLowerCase();
+            if (
+                (tabName === 'profile' && tabText.includes('profil')) ||
+                (tabName === 'usage' && tabText.includes('utilisation')) ||
+                (tabName === 'subscription' && tabText.includes('abonnement')) ||
+                (tabName === 'history' && tabText.includes('historique'))
+            ) {
+                tab.classList.add('active');
+            }
+        });
+        
+        // Mettre à jour l'URL avec le hash approprié
+        window.location.hash = tabName;
+    }
+
+    // Initialisation - montrer le bon onglet par défaut
+    document.addEventListener('DOMContentLoaded', function() {
+        // Vérifier s'il y a un hash dans l'URL pour ouvrir l'onglet correspondant
+        const hash = window.location.hash.substring(1); // Enlever le #
+        
+        if (hash && ['profile', 'usage', 'subscription', 'history'].includes(hash)) {
+            switchAccountTab(hash);
+        } else {
+            switchAccountTab('profile');
+        }
+        
+        // Écouter les changements de hash pour permettre la navigation directe
+        window.addEventListener('hashchange', function() {
+            const newHash = window.location.hash.substring(1);
+            if (newHash && ['profile', 'usage', 'subscription', 'history'].includes(newHash)) {
+                switchAccountTab(newHash);
+            }
+        });
+    });
+</script>
+{% endblock %}

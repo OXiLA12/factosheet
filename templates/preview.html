@@ -1,0 +1,1516 @@
+{% extends "base.html" %}
+
+{% block title %}Prévisualisation - FactoSheet{% endblock %}
+
+{% block body_class %}preview-page{% endblock %}
+
+{% block content %}
+<div class="preview-layout">
+    <!-- Sidebar des factures -->
+    <div class="invoice-sidebar">
+        <h3>📄 Factures Détectées</h3>
+        <div id="invoiceList">
+            <!-- Les factures seront générées ici par JavaScript -->
+        </div>
+        <div class="sidebar-stats">
+            <div class="stat-item">
+                <span class="stat-number" id="totalInvoices">{{ extraction_data.fournisseurs|length if extraction_data and extraction_data.get('fournisseurs') else 0 }}</span>
+                <span class="stat-label">Facture(s)</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ total_products }}</span>
+                <span class="stat-label">Produit(s)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="main-content">
+        <div class="preview-header">
+            <h1>Prévisualisation des Données Extraites</h1>
+            <p class="subtitle">Vérifiez vos données avant export Excel</p>
+        </div>
+
+    {% if extraction_data and extraction_data.get('fournisseurs') %}
+    <div class="preview-stats">
+        <div class="stat-card">
+            <h3>{{ extraction_data.fournisseurs|length }}</h3>
+            <p>Fournisseur{{ 's' if extraction_data.fournisseurs|length > 1 else '' }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>{{ total_products }}</h3>
+            <p>Produit{{ 's' if total_products > 1 else '' }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>{{ classified_products }}</h3>
+            <p>Code{{ 's' if classified_products > 1 else '' }} SH</p>
+        </div>
+    </div>
+
+    <!-- Section Détection d'Anomalies Conservatrice -->
+    {% if extraction_data and extraction_data.get('_anomaly_report') %}
+    <div class="anomaly-section">
+        <div class="anomaly-header">
+            <h3>🔍 Contrôle Qualité</h3>
+            <div class="quality-score">
+                {% set report = extraction_data._anomaly_report %}
+                {% set total_anomalies = report.total_anomalies if report else 0 %}
+                {% set critiques = report.par_severite.haute if report and report.par_severite else 0 %}
+                
+                {% if total_anomalies == 0 %}
+                    <span class="quality-status status-excellent">✅ Excellent</span>
+                {% elif critiques == 0 %}
+                    <span class="quality-status status-good">🟡 Bon</span>
+                {% elif critiques <= 2 %}
+                    <span class="quality-status status-attention">🟠 Révision conseillée</span>
+                {% else %}
+                    <span class="quality-status status-critical">🔴 Révision nécessaire</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% set anomalies = extraction_data.get('_anomalies', {}) %}
+        {% set total_anomalies = extraction_data._anomaly_report.total_anomalies %}
+        
+        {% if total_anomalies > 0 %}
+        <div class="anomaly-summary">
+            <div class="conservative-message">
+                {% if critiques == 0 %}
+                    <p class="message-info">💡 <strong>{{ total_anomalies }}</strong> anomalie(s) mineure(s) détectée(s). Révision optionnelle - vous pouvez procéder.</p>
+                {% elif critiques <= 2 %}
+                    <p class="message-warning">⚡ <strong>{{ critiques }}</strong> anomalie(s) critique(s) sur {{ total_anomalies }}. Révision rapide conseillée.</p>
+                {% else %}
+                    <p class="message-critical">🚨 <strong>{{ critiques }}</strong> anomalies critiques nécessitent une révision avant export.</p>
+                {% endif %}
+            </div>
+            
+            <!-- Affichage simplifié des stats uniquement si anomalies critiques -->
+            {% if critiques > 0 %}
+            <div class="severity-stats-minimal">
+                <div class="severity-item severity-high">
+                    <span class="count">{{ critiques }}</span>
+                    <span class="label">Critiques</span>
+                </div>
+                <div class="severity-item severity-total">
+                    <span class="count">{{ total_anomalies - critiques }}</span>
+                    <span class="label">Autres</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="anomaly-details">
+            <div class="anomaly-tabs">
+                {% for category, category_anomalies in anomalies.items() if category_anomalies %}
+                <button class="anomaly-tab" onclick="showAnomalyCategory('{{ category }}')">
+                    {{ {
+                        'prix_suspects': 'Prix Suspects',
+                        'quantites_suspectes': 'Quantités',
+                        'codes_sh_douteux': 'Codes SH',
+                        'montants_incoherents': 'Montants',
+                        'fournisseurs_suspects': 'Fournisseurs',
+                        'produits_incomplets': 'Données Manquantes',
+                        'doublons_potentiels': 'Doublons'
+                    }[category] or category }}
+                    <span class="count-badge">{{ category_anomalies|length }}</span>
+                </button>
+                {% endfor %}
+            </div>
+            
+            {% for category, category_anomalies in anomalies.items() if category_anomalies %}
+            <div class="anomaly-content" id="anomaly-{{ category }}" style="display: none;">
+                {% for anomaly in category_anomalies %}
+                <div class="anomaly-item severity-{{ anomaly.severite }}">
+                    <div class="anomaly-icon">
+                        {% if anomaly.severite == 'haute' %}🚨
+                        {% elif anomaly.severite == 'moyenne' %}⚠️
+                        {% else %}ℹ️
+                        {% endif %}
+                    </div>
+                    <div class="anomaly-details">
+                        <div class="anomaly-message">{{ anomaly.message }}</div>
+                        {% if anomaly.get('produit') %}
+                        <div class="anomaly-product">
+                            <strong>Produit:</strong> {{ anomaly.produit }}
+                            {% if anomaly.get('fournisseur') %}
+                            <span class="supplier">• {{ anomaly.fournisseur }}</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-anomalies">
+            <div class="success-icon">✅</div>
+            <h4>Aucune anomalie détectée</h4>
+            <p>Toutes vos données semblent cohérentes et complètes.</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="preview-table-container">
+        <table class="preview-table" id="dataTable">
+            <thead>
+                <tr>
+                    <th>Fournisseur</th>
+                    <th>Description</th>
+                    <th>Quantité</th>
+                    <th>Unité</th>
+                    <th>Prix Unitaire</th>
+                    <th>Montant Total</th>
+                    <th>Code SH</th>
+                    <th>Description SH</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set row_counter = namespace(value=0) %}
+                {% for fournisseur_name, fournisseur_data in extraction_data.fournisseurs.items() %}
+                    {% for produit in fournisseur_data.produits %}
+                    {% set has_anomaly = false %}
+                    {% set anomaly_types = [] %}
+                    {% set anomaly_severities = [] %}
+                    
+                    {# Vérifier si ce produit a des anomalies #}
+                    {% if extraction_data.get('_anomalies') %}
+                        {% for category, category_anomalies in extraction_data._anomalies.items() %}
+                            {% for anomaly in category_anomalies %}
+                                {# Correspondance par fournisseur et index ou par description #}
+                                {% set is_match = false %}
+                                {% if anomaly.get('fournisseur') == fournisseur_name %}
+                                    {% if anomaly.get('supplier_index') == loop.index0 %}
+                                        {% set is_match = true %}
+                                    {% elif anomaly.get('produit') and (anomaly.produit in produit.description or produit.description in anomaly.produit) %}
+                                        {% set is_match = true %}
+                                    {% endif %}
+                                {% endif %}
+                                
+                                {% if is_match %}
+                                    {% set has_anomaly = true %}
+                                    {% set _ = anomaly_types.append(anomaly.get('type', category)) %}
+                                    {% set _ = anomaly_severities.append(anomaly.get('severite', 'moyenne')) %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    {% endif %}
+                    
+                    {% set specific_anomalies = {} %}
+                    {# Analyser les anomalies spécifiques pour ce produit #}
+                    {% if extraction_data.get('_anomalies') %}
+                        {% for category, category_anomalies in extraction_data._anomalies.items() %}
+                            {% for anomaly in category_anomalies %}
+                                {% set is_match = false %}
+                                {% if anomaly.get('fournisseur') == fournisseur_name %}
+                                    {% if anomaly.get('supplier_index') == loop.index0 %}
+                                        {% set is_match = true %}
+                                    {% elif anomaly.get('produit') and (anomaly.produit in produit.description or produit.description in anomaly.produit) %}
+                                        {% set is_match = true %}
+                                    {% endif %}
+                                {% endif %}
+                                
+                                {% if is_match %}
+                                    {% set has_anomaly = true %}
+                                    {% set _ = anomaly_types.append(anomaly.get('type', category)) %}
+                                    {% set _ = anomaly_severities.append(anomaly.get('severite', 'moyenne')) %}
+                                    
+                                    {# Déterminer quelles cellules surligner selon le type d'anomalie #}
+                                    {% if 'prix' in anomaly.get('type', '') %}
+                                        {% set _ = specific_anomalies.update({'prix_unitaire': anomaly.get('severite', 'moyenne')}) %}
+                                    {% elif 'quantite' in anomaly.get('type', '') %}
+                                        {% set _ = specific_anomalies.update({'quantite': anomaly.get('severite', 'moyenne')}) %}
+                                    {% elif 'montant' in anomaly.get('type', '') %}
+                                        {% set _ = specific_anomalies.update({'montant_total': anomaly.get('severite', 'moyenne')}) %}
+                                    {% elif 'code_sh' in anomaly.get('type', '') or 'confidence_sh' in anomaly.get('type', '') %}
+                                        {% set _ = specific_anomalies.update({'code_sh': anomaly.get('severite', 'moyenne')}) %}
+                                    {% elif 'description' in anomaly.get('type', '') %}
+                                        {% set _ = specific_anomalies.update({'description': anomaly.get('severite', 'moyenne')}) %}
+                                    {% elif 'doublon' in anomaly.get('type', '') %}
+                                        {% set _ = specific_anomalies.update({'description': anomaly.get('severite', 'moyenne')}) %}
+                                        {% set _ = specific_anomalies.update({'code_sh': anomaly.get('severite', 'moyenne')}) %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    {% endif %}
+
+                    <tr data-row-index="{{ row_counter.value }}" 
+                        {% if has_anomaly %}
+                        class="row-with-anomaly severity-{{ anomaly_severities[0] if anomaly_severities else 'moyenne' }}"
+                        data-anomaly-types="{{ anomaly_types|join(',') }}"
+                        title="⚠️ Anomalie détectée: {{ anomaly_types[0] if anomaly_types else 'Inconnue' }}"
+                        {% endif %}>
+                        <td>{{ fournisseur_name }}</td>
+                        <td class="editable {% if specific_anomalies.get('description') %}cell-anomaly severity-{{ specific_anomalies.get('description') }}{% endif %}" data-field="description">{{ produit.description or 'N/A' }}</td>
+                        <td class="editable {% if specific_anomalies.get('quantite') %}cell-anomaly severity-{{ specific_anomalies.get('quantite') }}{% endif %}" data-field="quantite">{{ produit.quantite or '' }}</td>
+                        <td class="editable" data-field="unite">{{ produit.unite or '' }}</td>
+                        <td class="editable {% if specific_anomalies.get('prix_unitaire') %}cell-anomaly severity-{{ specific_anomalies.get('prix_unitaire') }}{% endif %}" data-field="prix_unitaire">{{ produit.prix_unitaire or '' }}</td>
+                        <td class="editable {% if specific_anomalies.get('montant_total') %}cell-anomaly severity-{{ specific_anomalies.get('montant_total') }}{% endif %}" data-field="montant_total">{{ produit.montant_total or '' }}</td>
+                        <td class="editable code-sh {% if specific_anomalies.get('code_sh') %}cell-anomaly severity-{{ specific_anomalies.get('code_sh') }}{% endif %}" data-field="code_sh">{{ produit.code_sh or 'N/A' }}</td>
+                        <td class="description-sh">{{ produit.description_sh or 'À classifier' }}</td>
+                        <td>
+                            {% if has_anomaly %}
+                            <div class="anomaly-indicator">
+                                {% if 'haute' in anomaly_severities %}🚨
+                                {% elif 'moyenne' in anomaly_severities %}⚠️
+                                {% else %}ℹ️
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            <button class="btn-edit" onclick="editRow(this)">Modifier</button>
+                        </td>
+                    </tr>
+                    {% set row_counter.value = row_counter.value + 1 %}
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="export-options">
+        <h3>Options d'Export</h3>
+        <div class="column-selector">
+            <p>Sélectionnez les colonnes à inclure dans l'export :</p>
+            <div class="checkbox-grid">
+                <label class="checkbox-item">
+                    <input type="checkbox" id="col-fournisseur" checked>
+                    <span>Fournisseur</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="col-description" checked>
+                    <span>Description</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="col-quantite" checked>
+                    <span>Quantité</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="col-unite" checked>
+                    <span>Unité</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="col-prix-unitaire" checked>
+                    <span>Prix Unitaire</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="col-montant-total" checked>
+                    <span>Montant Total</span>
+                </label>
+                <label class="checkbox-item {% if user_data.plan == 'decouverte' %}disabled{% endif %}">
+                    <input type="checkbox" id="col-code-sh" {% if user_data.plan == 'decouverte' %}disabled{% else %}checked{% endif %}>
+                    <span>Code SH {% if user_data.plan == 'decouverte' %}<small>(Pro+)</small>{% endif %}</span>
+                </label>
+                <label class="checkbox-item {% if user_data.plan == 'decouverte' %}disabled{% endif %}">
+                    <input type="checkbox" id="col-description-sh" {% if user_data.plan == 'decouverte' %}disabled{% endif %}>
+                    <span>Description SH {% if user_data.plan == 'decouverte' %}<small>(Pro+)</small>{% endif %}</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="col-confiance">
+                    <span>Confiance</span>
+                </label>
+            </div>
+            <div class="column-actions">
+                <button class="btn-small" onclick="selectAllColumns()">Tout sélectionner</button>
+                <button class="btn-small" onclick="unselectAllColumns()">Tout désélectionner</button>
+                <button class="btn-small" onclick="selectEssentialColumns()">Colonnes essentielles</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="preview-actions">
+        <button class="btn btn-secondary" onclick="goBack()">
+            Retour au Dashboard
+        </button>
+        <button class="btn btn-primary" onclick="exportToExcel()">
+            Export Excel Standard
+            <small style="display: block; font-size: 0.8em; opacity: 0.8;">
+                Données d'extraction
+            </small>
+        </button>
+        <button class="btn btn-success" onclick="exportDEB()">
+            Export DEB Expéditions
+            <small style="display: block; font-size: 0.8em; opacity: 0.8;">
+                Déclaration d'Échanges de Biens
+            </small>
+        </button>
+    </div>
+
+    {% else %}
+    <div class="no-data">
+        <h2>Aucune donnée à prévisualiser</h2>
+        <p>Retournez au dashboard pour extraire des données d'une facture.</p>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Retour au Dashboard</a>
+    </div>
+    {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+/* Layout principal */
+.preview-layout {
+    display: flex;
+    gap: 1.5rem;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Sidebar des factures */
+.invoice-sidebar {
+    width: 300px;
+    min-width: 280px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 1.5rem;
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    box-shadow: 0 4px 20px rgba(76, 175, 80, 0.1);
+}
+
+.invoice-sidebar h3 {
+    color: #2E7D32;
+    margin: 0 0 1rem 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-align: center;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid rgba(76, 175, 80, 0.2);
+}
+
+.invoice-card {
+    background: rgba(76, 175, 80, 0.05);
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.invoice-card:hover {
+    background: rgba(76, 175, 80, 0.1);
+    border-color: #4CAF50;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+}
+
+.invoice-card.active {
+    background: rgba(76, 175, 80, 0.15);
+    border-color: #2E7D32;
+    border-width: 2px;
+}
+
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.invoice-number {
+    font-weight: bold;
+    color: #1B5E20;
+    font-size: 0.9rem;
+}
+
+.invoice-amount {
+    color: #FF9800;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.invoice-supplier {
+    color: #424242;
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.invoice-date {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.invoice-products {
+    color: #2E7D32;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+.sidebar-stats {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #2E7D32;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Contenu principal */
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.preview-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.preview-header h1 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.preview-stats {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    min-width: 120px;
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.stat-card p {
+    margin: 0.5rem 0 0 0;
+    color: var(--text-muted);
+}
+
+.preview-table-container {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    overflow-x: auto;
+}
+
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: transparent;
+}
+
+.preview-table th {
+    background: rgba(76, 175, 80, 0.2);
+    color: white;
+    padding: 1rem 0.5rem;
+    text-align: left;
+    border-bottom: 2px solid var(--primary-color);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.preview-table td {
+    padding: 0.8rem 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.preview-table tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.editable {
+    cursor: text;
+    position: relative;
+}
+
+.editable:hover {
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.code-sh {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.description-sh {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.btn-edit {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.btn-edit:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+}
+
+.export-options {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 2rem 0;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.export-options h3 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.column-selector p {
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.9); /* Fond blanc pour contraste */
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
+    margin: 4px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.checkbox-item:hover {
+    background: rgba(76, 175, 80, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+    transform: translateY(-1px);
+}
+
+.checkbox-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+    margin: 0;
+}
+
+.checkbox-item span {
+    color: #1a1a1a; /* Texte sombre pour lisibilité */
+    font-weight: 500;
+    user-select: none;
+}
+
+.checkbox-item input[type="checkbox"]:checked + span {
+    color: #1B5E20; /* Texte vert foncé quand coché */
+    font-weight: 600;
+}
+
+.checkbox-item:has(input[type="checkbox"]:checked) {
+    background: rgba(76, 175, 80, 0.15); /* Fond vert léger quand coché */
+    border-color: var(--primary-color);
+}
+
+.checkbox-item.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: rgba(240, 240, 240, 0.8); /* Fond gris clair pour distinguer les éléments désactivés */
+    border-color: #d0d0d0;
+}
+
+.checkbox-item.disabled:hover {
+    background: rgba(240, 240, 240, 0.8); /* Pas de changement au survol pour les désactivés */
+    border-color: #d0d0d0;
+    transform: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.checkbox-item.disabled input[type="checkbox"] {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.checkbox-item.disabled span {
+    color: #666; /* Couleur sombre mais lisible pour les éléments désactivés */
+    font-weight: 400;
+}
+
+.checkbox-item.disabled span small {
+    color: #ff9800;
+    font-weight: 600;
+    background: rgba(255, 152, 0, 0.1);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+}
+
+.column-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-small {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.btn-small:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.preview-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.no-data {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.no-data h2 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .preview-layout {
+        flex-direction: column;
+    }
+    
+    .invoice-sidebar {
+        width: 100%;
+        position: static;
+        margin-bottom: 1rem;
+    }
+    
+    .invoice-sidebar h3 {
+        text-align: left;
+    }
+    
+    #invoiceList {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .preview-layout {
+        padding: 0.5rem;
+        gap: 1rem;
+    }
+    
+    .invoice-sidebar {
+        padding: 1rem;
+    }
+    
+    #invoiceList {
+        grid-template-columns: 1fr;
+    }
+    
+    .preview-stats {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .preview-table-container {
+        padding: 0.5rem;
+    }
+    
+    .preview-table th,
+    .preview-table td {
+        padding: 0.5rem 0.3rem;
+        font-size: 0.8rem;
+    }
+    
+    .preview-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+</style>
+
+<script>
+function editRow(button) {
+    const row = button.closest('tr');
+    const editableCells = row.querySelectorAll('.editable');
+    
+    editableCells.forEach(cell => {
+        const field = cell.dataset.field;
+        const currentValue = cell.textContent.trim();
+        
+        if (field === 'description') {
+            cell.innerHTML = `<textarea style="width: 100%; min-height: 60px; background: rgba(255,255,255,0.95); border: 2px solid var(--primary-color); border-radius: 6px; color: #1B5E20; padding: 8px; font-weight: 600; font-size: 14px;">${currentValue}</textarea>`;
+        } else {
+            cell.innerHTML = `<input type="text" value="${currentValue}" style="width: 100%; background: rgba(255,255,255,0.95); border: 2px solid var(--primary-color); border-radius: 6px; color: #1B5E20; padding: 8px; font-weight: 600; font-size: 14px;">`;
+        }
+    });
+    
+    button.textContent = 'Sauvegarder';
+    button.onclick = () => saveRow(button);
+}
+
+function saveRow(button) {
+    const row = button.closest('tr');
+    const editableCells = row.querySelectorAll('.editable');
+    
+    editableCells.forEach(cell => {
+        const input = cell.querySelector('input, textarea');
+        if (input) {
+            cell.textContent = input.value;
+        }
+    });
+    
+    button.textContent = 'Modifier';
+    button.onclick = () => editRow(button);
+    
+    // Notification de sauvegarde
+    showNotification('Modifications sauvegardées');
+}
+
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    const bgColor = type === 'error' ? '#f44336' : 'var(--primary-color)';
+    
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${bgColor};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+function goBack() {
+    window.location.href = "{{ url_for('dashboard') }}";
+}
+
+function exportToExcel() {
+    // Vérifier quelles colonnes sont sélectionnées
+    const selectedColumns = getSelectedColumns();
+    
+    if (selectedColumns.length === 0) {
+        showNotification('Veuillez sélectionner au moins une colonne à exporter', 'error');
+        return;
+    }
+    
+    // Collecter les données modifiées selon les colonnes sélectionnées
+    const rows = document.querySelectorAll('#dataTable tbody tr');
+    const modifiedData = [];
+    
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const rowData = {};
+        
+        // Ajouter seulement les colonnes sélectionnées
+        if (selectedColumns.includes('fournisseur')) rowData.fournisseur = cells[0].textContent.trim();
+        if (selectedColumns.includes('description')) rowData.description = cells[1].textContent.trim();
+        if (selectedColumns.includes('quantite')) rowData.quantite = cells[2].textContent.trim();
+        if (selectedColumns.includes('unite')) rowData.unite = cells[3].textContent.trim();
+        if (selectedColumns.includes('prix_unitaire')) rowData.prix_unitaire = cells[4].textContent.trim();
+        if (selectedColumns.includes('montant_total')) rowData.montant_total = cells[5].textContent.trim();
+        if (selectedColumns.includes('code_sh')) rowData.code_sh = cells[6].textContent.trim();
+        if (selectedColumns.includes('description_sh')) rowData.description_sh = cells[7].textContent.trim();
+        if (selectedColumns.includes('confiance')) rowData.confiance = '95%'; // Valeur par défaut
+        
+        modifiedData.push(rowData);
+    });
+    
+    // Lancer l'export
+    showNotification('Génération du fichier Excel avec colonnes sélectionnées...');
+    
+    // Rediriger vers l'export avec les données
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/export/excel';
+    
+    const dataInput = document.createElement('input');
+    dataInput.type = 'hidden';
+    dataInput.name = 'modified_data';
+    dataInput.value = JSON.stringify(modifiedData);
+    
+    const columnsInput = document.createElement('input');
+    columnsInput.type = 'hidden';
+    columnsInput.name = 'selected_columns';
+    columnsInput.value = JSON.stringify(selectedColumns);
+    
+    form.appendChild(dataInput);
+    form.appendChild(columnsInput);
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function getSelectedColumns() {
+    const checkboxes = document.querySelectorAll('.checkbox-item input[type="checkbox"]');
+    const selected = [];
+    
+    checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            const columnName = checkbox.id.replace('col-', '').replace('-', '_');
+            selected.push(columnName);
+        }
+    });
+    
+    return selected;
+}
+
+function selectAllColumns() {
+    const checkboxes = document.querySelectorAll('.checkbox-item input[type="checkbox"]');
+    checkboxes.forEach(checkbox => checkbox.checked = true);
+    showNotification('Toutes les colonnes sélectionnées');
+}
+
+function unselectAllColumns() {
+    const checkboxes = document.querySelectorAll('.checkbox-item input[type="checkbox"]');
+    checkboxes.forEach(checkbox => checkbox.checked = false);
+    showNotification('Toutes les colonnes désélectionnées');
+}
+
+function selectEssentialColumns() {
+    // Désélectionner tout d'abord
+    unselectAllColumns();
+    
+    // Sélectionner les colonnes essentielles
+    const essentialColumns = ['col-fournisseur', 'col-description', 'col-quantite', 'col-montant-total', 'col-code-sh'];
+    essentialColumns.forEach(colId => {
+        const checkbox = document.getElementById(colId);
+        if (checkbox) checkbox.checked = true;
+    });
+    
+    showNotification('Colonnes essentielles sélectionnées');
+}
+
+// Animation CSS
+const style = document.createElement('style');
+style.textContent = `
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+`;
+document.head.appendChild(style);
+
+
+
+function exportDEB() {
+    // Afficher un message d'information
+    const loading = document.createElement('div');
+    loading.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(76, 175, 80, 0.9);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        z-index: 1000;
+        font-weight: bold;
+        backdrop-filter: blur(10px);
+    `;
+    loading.textContent = '📋 Génération DEB Expéditions...';
+    document.body.appendChild(loading);
+    
+    // Créer le lien de téléchargement direct
+    window.location.href = '/export/deb';
+    
+    // Supprimer le message après un délai
+    setTimeout(() => {
+        if (document.body.contains(loading)) {
+            document.body.removeChild(loading);
+        }
+    }, 3000);
+}
+
+function showUpgradeModal() {
+    // Créer le modal de mise à niveau
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        backdrop-filter: blur(5px);
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 15px;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        color: white;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    `;
+    
+    modalContent.innerHTML = `
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+        <h2 style="margin-bottom: 1rem; color: white;">Fonctionnalité Avancée</h2>
+        <p style="margin-bottom: 1.5rem; opacity: 0.9; line-height: 1.6;">
+            L'export de justification douanière avec regroupement par codes SH est disponible 
+            à partir du plan <strong>Pro (99€/mois)</strong>.
+        </p>
+        <div style="background: rgba(255, 255, 255, 0.1); padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem;">
+            <p style="margin: 0; font-size: 0.9rem;">
+                <strong>Plan actuel :</strong> {{ user_data.plan|default('Découverte')|title }}<br>
+                <strong>Fonctionnalité requise :</strong> Plan Pro ou supérieur
+            </p>
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <button onclick="closeUpgradeModal()" style="
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+                border: none;
+                padding: 0.75rem 1.5rem;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+            ">Fermer</button>
+            <a href="{{ url_for('pricing') }}" style="
+                background: #4CAF50;
+                color: white;
+                text-decoration: none;
+                padding: 0.75rem 1.5rem;
+                border-radius: 8px;
+                font-weight: 600;
+                display: inline-block;
+            ">Voir les plans</a>
+        </div>
+    `;
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Fermer le modal en cliquant à l'extérieur
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeUpgradeModal();
+        }
+    });
+    
+    window.upgradeModal = modal;
+}
+
+function closeUpgradeModal() {
+    if (window.upgradeModal) {
+        document.body.removeChild(window.upgradeModal);
+        window.upgradeModal = null;
+    }
+}
+
+// Fonction intelligente pour détecter et générer les cartes de factures
+function generateInvoiceCards() {
+    const invoiceList = document.getElementById('invoiceList');
+    if (!invoiceList) return;
+    
+    const rows = document.querySelectorAll('#dataTable tbody tr');
+    const invoices = [];
+    let currentSupplier = null;
+    let currentInvoice = null;
+    let supplierSequence = {}; // Compteur pour les multiples factures d'un même fournisseur
+    let rowIndex = 0;
+    
+    // Parcourir toutes les lignes pour détecter les changements de fournisseur
+    rows.forEach((row) => {
+        const cells = row.querySelectorAll('td');
+        const supplier = cells[0]?.textContent.trim() || 'Fournisseur inconnu';
+        const description = cells[1]?.textContent.trim() || '';
+        const amount = cells[5]?.textContent.trim() || '0';
+        
+        // Nouvelle facture détectée si changement de fournisseur
+        if (supplier !== currentSupplier) {
+            // Finaliser la facture précédente
+            if (currentInvoice && currentInvoice.products.length > 0) {
+                invoices.push(currentInvoice);
+            }
+            
+            // Initialiser ou incrémenter le compteur pour ce fournisseur
+            if (!supplierSequence[supplier]) {
+                supplierSequence[supplier] = 0;
+            }
+            supplierSequence[supplier]++;
+            
+            // Créer nouvelle facture
+            currentSupplier = supplier;
+            currentInvoice = {
+                supplier: supplier,
+                supplierSequence: supplierSequence[supplier],
+                number: `F${invoices.length + 1}-${supplier.substring(0, 3).toUpperCase()}${supplierSequence[supplier] > 1 ? `-${supplierSequence[supplier]}` : ''}`,
+                date: new Date().toLocaleDateString('fr-FR'),
+                products: [],
+                totalAmount: 0,
+                rowIndices: [],
+                startRow: rowIndex,
+                anomalyCount: 0
+            };
+        }
+        
+        // Ajouter produit à la facture courante
+        if (currentInvoice) {
+            currentInvoice.products.push(description);
+            currentInvoice.rowIndices.push(rowIndex);
+            
+            // Calculer montant
+            const numAmount = parseFloat(amount.replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
+            currentInvoice.totalAmount += numAmount;
+            
+            // Compter anomalies
+            if (row.classList.contains('row-with-anomaly')) {
+                currentInvoice.anomalyCount++;
+            }
+        }
+        
+        rowIndex++;
+    });
+    
+    // Ajouter la dernière facture
+    if (currentInvoice && currentInvoice.products.length > 0) {
+        invoices.push(currentInvoice);
+    }
+    
+    // Mettre à jour compteur total
+    const totalInvoicesElement = document.getElementById('totalInvoices');
+    if (totalInvoicesElement) {
+        totalInvoicesElement.textContent = invoices.length;
+    }
+    
+    console.log(`📊 Détection intelligente: ${invoices.length} factures identifiées`);
+    console.log('Détail des factures:', invoices.map(inv => ({
+        supplier: inv.supplier,
+        sequence: inv.supplierSequence,
+        products: inv.products.length,
+        anomalies: inv.anomalyCount
+    })));
+    
+    // Générer les cartes
+    invoiceList.innerHTML = '';
+    
+    invoices.forEach((invoice, index) => {
+        const card = document.createElement('div');
+        let cardClass = 'invoice-card';
+        
+        // Ajouter classe pour anomalies
+        if (invoice.anomalyCount > 0) {
+            cardClass += ' has-anomalies';
+        }
+        
+        card.className = cardClass;
+        card.dataset.supplier = invoice.supplier;
+        card.dataset.cardIndex = index;
+        
+        // Nom d'affichage intelligent
+        let displayName = `Facture ${index + 1}`;
+        if (invoice.supplierSequence > 1) {
+            displayName += ` (#${invoice.supplierSequence})`;
+        }
+        
+        card.innerHTML = `
+            <div class="invoice-header">
+                <span class="invoice-number">${invoice.number}</span>
+                <span class="invoice-amount">${invoice.totalAmount.toFixed(2)} €</span>
+                ${invoice.anomalyCount > 0 ? `<div class="anomaly-badge">${invoice.anomalyCount}⚠️</div>` : ''}
+            </div>
+            <div class="invoice-supplier">${invoice.supplier}</div>
+            <div class="invoice-meta">
+                <div class="invoice-date">📅 ${invoice.date}</div>
+                <div class="invoice-products">📦 ${invoice.products.length} produit(s)</div>
+                <div class="invoice-lines">📝 Lignes ${invoice.startRow + 1}-${invoice.startRow + invoice.products.length}</div>
+            </div>
+        `;
+        
+        // Événement de clic avec highlighting intelligent
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.invoice-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            
+            const firstRowIndex = invoice.rowIndices[0];
+            const firstRow = document.querySelector(`#dataTable tbody tr:nth-child(${firstRowIndex + 1})`);
+            
+            if (firstRow) {
+                firstRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Couleur selon présence d'anomalies
+                const highlightColor = invoice.anomalyCount > 0 ? 
+                    'rgba(255, 152, 0, 0.4)' : 'rgba(76, 175, 80, 0.3)';
+                
+                // Effet visuel amélioré
+                invoice.rowIndices.forEach((rowIdx, i) => {
+                    const row = document.querySelector(`#dataTable tbody tr:nth-child(${rowIdx + 1})`);
+                    if (row) {
+                        setTimeout(() => {
+                            row.style.backgroundColor = highlightColor;
+                            row.style.transform = 'translateX(8px)';
+                            row.style.transition = 'all 0.3s ease';
+                            row.style.borderLeft = '4px solid #4CAF50';
+                            
+                            setTimeout(() => {
+                                row.style.backgroundColor = '';
+                                row.style.transform = '';
+                                row.style.borderLeft = '';
+                            }, 2500);
+                        }, i * 100); // Animation en cascade
+                    }
+                });
+            }
+        });
+        
+        invoiceList.appendChild(card);
+    });
+}
+
+// Appeler la fonction après le chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    generateInvoiceCards();
+});
+
+// Gestion des onglets d'anomalies
+function showAnomalyCategory(category) {
+    // Masquer tous les contenus d'anomalies
+    const allContents = document.querySelectorAll('.anomaly-content');
+    allContents.forEach(content => {
+        content.style.display = 'none';
+    });
+    
+    // Désactiver tous les onglets
+    const allTabs = document.querySelectorAll('.anomaly-tab');
+    allTabs.forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Afficher le contenu sélectionné
+    const selectedContent = document.getElementById(`anomaly-${category}`);
+    if (selectedContent) {
+        selectedContent.style.display = 'block';
+    }
+    
+    // Activer l'onglet sélectionné
+    const selectedTab = event.target.closest('.anomaly-tab');
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+    }
+    
+    // Surligner les lignes correspondantes dans le tableau
+    highlightAnomalyRows(category);
+}
+
+// Surligner les lignes avec anomalies correspondantes
+function highlightAnomalyRows(category) {
+    // Réinitialiser tous les surlignages
+    const allRows = document.querySelectorAll('.row-with-anomaly');
+    allRows.forEach(row => {
+        row.classList.remove('highlight-active');
+    });
+    
+    // Surligner les lignes de la catégorie sélectionnée
+    if (category) {
+        const categoryRows = document.querySelectorAll(`[data-anomaly-types*="${category}"]`);
+        categoryRows.forEach(row => {
+            row.classList.add('highlight-active');
+        });
+    }
+}
+
+// Faire défiler jusqu'à la première ligne avec anomalie
+function scrollToFirstAnomaly() {
+    const firstAnomalyRow = document.querySelector('.row-with-anomaly');
+    if (firstAnomalyRow) {
+        firstAnomalyRow.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+        });
+        // Ajouter un effet de clignotement
+        firstAnomalyRow.style.animation = 'none';
+        setTimeout(() => {
+            firstAnomalyRow.style.animation = 'anomalyPulse 1s ease-in-out 3';
+        }, 100);
+    }
+}
+
+// Compter et afficher le nombre d'anomalies dans le tableau
+function updateAnomalyStats() {
+    const anomalyRows = document.querySelectorAll('.row-with-anomaly');
+    const totalProducts = document.querySelectorAll('#dataTable tbody tr').length;
+    
+    if (anomalyRows.length > 0) {
+        // Ajouter un indicateur dans les statistiques
+        const statsSection = document.querySelector('.preview-stats');
+        if (statsSection && !document.querySelector('.anomaly-stat-card')) {
+            const anomalyCard = document.createElement('div');
+            anomalyCard.className = 'stat-card anomaly-stat-card';
+            anomalyCard.innerHTML = `
+                <h3 style="color: #f44336;">${anomalyRows.length}</h3>
+                <p>Anomalie${anomalyRows.length > 1 ? 's' : ''}</p>
+                <button onclick="scrollToFirstAnomaly()" style="margin-top: 0.5rem; background: #f44336; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                    Voir
+                </button>
+            `;
+            statsSection.appendChild(anomalyCard);
+        }
+    }
+}
+
+// Activer le premier onglet par défaut et mettre à jour les stats
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const firstTab = document.querySelector('.anomaly-tab');
+        if (firstTab) {
+            // Simuler un clic sur le premier onglet
+            firstTab.click();
+        }
+        
+        // Mettre à jour les statistiques d'anomalies
+        updateAnomalyStats();
+        
+        // Ajouter des classes spéciales aux onglets selon la sévérité
+        const tabs = document.querySelectorAll('.anomaly-tab');
+        tabs.forEach(tab => {
+            const tabText = tab.textContent.toLowerCase();
+            if (tabText.includes('prix') || tabText.includes('montants') || tabText.includes('codes sh')) {
+                tab.classList.add('has-critical');
+            } else if (tabText.includes('quantités') || tabText.includes('fournisseurs')) {
+                tab.classList.add('has-warning');
+            }
+        });
+    }, 500);
+    
+    // Gestion des onglets d'anomalies
+    window.showAnomalyCategory = function(category) {
+        console.log('Switching to anomaly category:', category);
+        // Masquer tous les contenus d'anomalies
+        const allContents = document.querySelectorAll('.anomaly-content');
+        allContents.forEach(content => {
+            content.style.display = 'none';
+        });
+        
+        // Désactiver tous les onglets
+        const allTabs = document.querySelectorAll('.anomaly-tab');
+        allTabs.forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Afficher le contenu sélectionné
+        const selectedContent = document.getElementById(`anomaly-${category}`);
+        if (selectedContent) {
+            selectedContent.style.display = 'block';
+        }
+        
+        // Activer l'onglet sélectionné
+        const selectedTab = event.target.closest('.anomaly-tab');
+        if (selectedTab) {
+            selectedTab.classList.add('active');
+        }
+        
+        // Surligner les lignes correspondantes dans le tableau
+        highlightAnomalyRows(category);
+    };
+
+    // Surligner les lignes avec anomalies correspondantes
+    function highlightAnomalyRows(category) {
+        // Réinitialiser tous les surlignages temporaires
+        const allRows = document.querySelectorAll('.row-with-anomaly');
+        const allCells = document.querySelectorAll('.cell-anomaly');
+        
+        allRows.forEach(row => {
+            row.classList.remove('highlight-active');
+        });
+        
+        allCells.forEach(cell => {
+            cell.classList.remove('highlight-focus');
+        });
+        
+        // Surligner les éléments de la catégorie sélectionnée
+        if (category) {
+            const categoryRows = document.querySelectorAll(`[data-anomaly-types*="${category}"]`);
+            categoryRows.forEach(row => {
+                row.classList.add('highlight-active');
+                
+                // Trouver et mettre en évidence les cellules spécifiques selon la catégorie
+                if (category.includes('prix')) {
+                    row.querySelectorAll('[data-field="prix_unitaire"].cell-anomaly').forEach(cell => {
+                        cell.classList.add('highlight-focus');
+                    });
+                } else if (category.includes('quantite')) {
+                    row.querySelectorAll('[data-field="quantite"].cell-anomaly').forEach(cell => {
+                        cell.classList.add('highlight-focus');
+                    });
+                } else if (category.includes('montant')) {
+                    row.querySelectorAll('[data-field="montant_total"].cell-anomaly').forEach(cell => {
+                        cell.classList.add('highlight-focus');
+                    });
+                } else if (category.includes('code') || category.includes('sh')) {
+                    row.querySelectorAll('[data-field="code_sh"].cell-anomaly').forEach(cell => {
+                        cell.classList.add('highlight-focus');
+                    });
+                } else if (category.includes('doublon') || category.includes('description')) {
+                    row.querySelectorAll('[data-field="description"].cell-anomaly').forEach(cell => {
+                        cell.classList.add('highlight-focus');
+                    });
+                }
+            });
+        }
+    }
+
+    // Faire défiler jusqu'à la première ligne avec anomalie
+    window.scrollToFirstAnomaly = function() {
+        const firstAnomalyRow = document.querySelector('.row-with-anomaly');
+        if (firstAnomalyRow) {
+            firstAnomalyRow.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+            // Ajouter un effet de clignotement
+            firstAnomalyRow.style.animation = 'none';
+            setTimeout(() => {
+                firstAnomalyRow.style.animation = 'anomalyPulse 1s ease-in-out 3';
+            }, 100);
+        }
+    };
+
+    // Compter et afficher le nombre d'anomalies dans le tableau
+    function updateAnomalyStats() {
+        const anomalyRows = document.querySelectorAll('.row-with-anomaly');
+        
+        if (anomalyRows.length > 0) {
+            // Ajouter un indicateur dans les statistiques
+            const statsSection = document.querySelector('.preview-stats');
+            if (statsSection && !document.querySelector('.anomaly-stat-card')) {
+                const anomalyCard = document.createElement('div');
+                anomalyCard.className = 'stat-card anomaly-stat-card';
+                anomalyCard.innerHTML = `
+                    <h3 style="color: #f44336;">${anomalyRows.length}</h3>
+                    <p>Anomalie${anomalyRows.length > 1 ? 's' : ''}</p>
+                    <button onclick="scrollToFirstAnomaly()" style="margin-top: 0.5rem; background: #f44336; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                        Voir
+                    </button>
+                `;
+                statsSection.appendChild(anomalyCard);
+            }
+        }
+    }
+
+    // Initialiser les anomalies après le chargement
+    setTimeout(function() {
+        const firstTab = document.querySelector('.anomaly-tab');
+        if (firstTab) {
+            firstTab.click();
+        }
+        updateAnomalyStats();
+        
+        // Ajouter des classes spéciales aux onglets selon la sévérité
+        const tabs = document.querySelectorAll('.anomaly-tab');
+        tabs.forEach(tab => {
+            const tabText = tab.textContent.toLowerCase();
+            if (tabText.includes('codes sh') || tabText.includes('prix') || tabText.includes('montants')) {
+                tab.classList.add('has-critical');
+            } else if (tabText.includes('quantités') || tabText.includes('fournisseurs')) {
+                tab.classList.add('has-warning');
+            }
+        });
+    }, 1000);
+});
+</script>
+{% endblock %}
